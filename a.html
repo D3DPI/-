@@ -1,0 +1,60 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>中医脉图码</title>
+<style>
+#weixinStyle{ width:100%; display:none; text-align:center; font-size:16px; padding-top:50px;}
+</style>
+</head>
+
+<body>
+
+<div id="text" style='position: absolute; top: 10px; width:100%; text-align: center; z-index: 1;'>
+    <p id="debug" style="color: red; font-size: 40px;"><strong>提示：请点击右上角，选择“用浏览器打开”</strong><em style='font-size: 120px; '>↗</em></p>
+    <br /><br /><br /><br />
+    <div id="text" style='text-align: left; z-index: 1;padding-left: 100px;padding-right: 100px;'>
+        <p style="font-size: 42px;"><strong>中医脉图观测方法：</strong></p>
+        <br /><br />
+        <p style="font-size: 40px;">方法1（本方法）：</p>
+        <p style="font-size: 35px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;使用微信等APP扫描至本页面，点击右上角，跳转系统浏览器后，点击“允许获取摄像头”按钮，窗口显示此前扫描的三维脉象。在该网址（dpidpidpi.com）窗口下，可持续扫描、生成更多脉象。</p>
+        <br /><br />
+        <!-- <p style="font-size: 40px;">方法2：</p>
+        <p style="font-size: 35px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;通过手机自带相机应用，扫描脉图码、跳转并在页面显示三维脉象。可持续扫描、生成更多脉象。</p>
+        <br /><br /> -->
+        <p style="font-size: 40px;">方法2：</p>
+        <p style="font-size: 35px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;直接在手机自带浏览器中输入网址(dpidpidpi.com)，点击“允许获取摄像头”按钮，在窗口中扫描并生成脉象。</p>
+        <br /><br />
+    </div>
+</div>
+
+
+<script type="text/javascript">
+    //获取id为weixinStyle的div对象
+    var weixin=document.getElementById("weixinStyle");
+    let param = window.location.search.substring(1);
+    //网页加载后执行函数
+    window.onload=function(){
+        //判断是否为微信内核 是 则显示引导图标 否则 不显示直接下载
+        if(isWeixin()){
+            //是微信打开显示提示信息
+            weixin.style.display="block";   
+        }else{
+            //是非微信打开直接跳转下载地址
+            location.replace("3DPI.html?" + param); 
+        }
+    }
+
+    //这个函数用来判断当前浏览器是否微信内置浏览器，是微信返回true，不是微信返回false
+    function isWeixin(){
+        var WxObj=window.navigator.userAgent.toLowerCase();
+        if(WxObj.match(/microMessenger/i)=='micromessenger'){
+            return true;
+        }else{
+            return false;
+        }
+    }
+</script>
+</body>
+</html>
+

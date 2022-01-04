@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>同页面的 Web Worker</title>
+</head>
+<body>
+  <script type="app/worker" id="worker">
+  	//注意必须指定<script>标签的type属性是一个浏览器不认识的值
+    onmessage = function(event) {
+      console.log("收到主线程的数据：", event);
+      postMessage("done!");
+    }
+  </script>
+
+  <script>
+    var blob = new Blob([document.querySelector("#worker").textContent]);
+    var url = window.URL.createObjectURL(blob);
+    var worker = new Worker(url);
+
+    worker.onmessage = function(event) {
+    	console.log("收到worker的数据：", event);
+    	worker.terminate();
+    };
+
+    worker.postMessage("start");
+  </script>
+</body>
+</html>
+
