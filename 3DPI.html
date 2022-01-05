@@ -1,0 +1,1273 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<link rel="shortcut icon" href="./favicon.ico" type="image/x-icon">
+	<title>3DPI三维场景</title>
+	<style>
+		body {
+			margin: 0;
+			overflow: hidden;
+		}
+	</style>
+	<script src="./build/three2.js"></script>
+	<script src="./build/ar2.js"></script>
+	<script type='text/javascript'>
+		var scan_or_show = 0;
+		var ball_1D0, ball_1D1, ball_1D2, C_x0, C_x1, C_x2, C_y0, C_z0, C_y1, C_z1, C_y2, C_z2, C_x_stop0, C_x_stop1, C_x_stop2;
+		var Breath_x0, Breath_y0, Breath_z0, Breath_x1, Breath_y1, Breath_z1, Breath_x2, Breath_y2, Breath_z2;
+		var ball_breath = null;
+		var resolution = new THREE.Vector2(window.innerWidth, window.innerHeight / 2);
+		var P1new, P2new, Tnew;
+		var paramA = [0, 0, 0];
+		var paramB = [0, 0, 0];
+		var paramN = [1, 1, 1];
+		var paramM = [0, 0, 0];
+		var info_string = [0, 0, 0];
+		var tStart, tEnd, tDelta, tStart_ms, tEnd_ms;
+		var loader = new THREE.FontLoader();
+	</script>
+	<script src="./build/jsQR.js"></script>
+	<script src="./build/OrbitControls2.js"></script>
+	<script src="./build/THREE.MeshLine.js"></script>
+	<script src="./create_model_6.js"></script>
+	<script src="./jsQR_worker.js"></script>
+</head>
+
+<body>
+	<div id="text" style='position: absolute; bottom: 10px; width:100%; text-align: center; z-index: 1;'>
+		<p id="debug" style="color: red; font-size: 25px;"><strong>推荐使用竖屏，依次扫描每个二维码</strong></p>
+		<a onclick="sAlert('effect');">目前已测试设备列表(点击查看)</a>
+	</div>
+	<canvas id="canvas"></canvas>
+	<img id="source1" width="150" height="150">
+	<img id="source2" width="150" height="150">
+	<img id="source3" width="150" height="150">
+	<script>
+		let param = window.location.search.substring(1);
+		function sAlert(str) {
+			var msgw, msgh, bordercolor;
+			msgw = 400;
+			msgh = 800;
+			titleheight = 10
+			bordercolor = "#336699";
+			titlecolor = "#99CCFF";
+			var sWidth, sHeight;
+			sWidth = document.body.offsetWidth;
+			sHeight = screen.height;
+			var bgObj = document.createElement("div");
+			bgObj.setAttribute('id', 'bgDiv');
+			bgObj.style.position = "absolute";
+			bgObj.style.top = "0";
+			bgObj.style.filter = "progid:DXImageTransform.Microsoft.Alpha(style=3,opacity=25,finishOpacity=75";
+			bgObj.style.opacity = "0.6";
+			bgObj.style.left = "0";
+			bgObj.style.width = sWidth + "px";
+			bgObj.style.height = sHeight + "px";
+			bgObj.style.zIndex = "10000";
+			document.body.appendChild(bgObj);
+			var msgObj = document.createElement("div")
+			msgObj.setAttribute("id", "msgDiv");
+			msgObj.setAttribute("align", "center");
+			msgObj.style.background = "white";
+			msgObj.style.border = "1px solid " + bordercolor;
+			msgObj.style.position = "absolute";
+			msgObj.style.left = "50%";
+			msgObj.style.top = "50%";
+			msgObj.style.font = "12px/1.6em Verdana, Geneva, Arial, Helvetica, sans-serif";
+			msgObj.style.marginLeft = "-225px";
+			msgObj.style.marginTop = -400 + document.documentElement.scrollTop + "px";
+			msgObj.style.width = msgw + "px";
+			msgObj.style.height = msgh + "px";
+			msgObj.style.textAlign = "center";
+			msgObj.style.lineHeight = "15px";
+			msgObj.style.zIndex = "10001";
+			var title = document.createElement("h4");
+			title.setAttribute("id", "msgTitle");
+			title.setAttribute("align", "right");
+			title.style.margin = "0";
+			title.style.padding = "3px";
+			title.style.background = bordercolor;
+			title.style.filter = "progid:DXImageTransform.Microsoft.Alpha(startX=20, startY=20, finishX=100, finishY=100,style=1,opacity=75,finishOpacity=100);";
+			title.style.opacity = "0.75";
+			title.style.border = "1px solid " + bordercolor;
+			title.style.height = "58px";
+			title.style.font = "12px Verdana, Geneva, Arial, Helvetica, sans-serif";
+			title.style.color = "white";
+			title.style.cursor = "pointer";
+			title.innerHTML = "close";
+			title.onclick = function () {
+				document.body.removeChild(bgObj);
+				document.getElementById("msgDiv").removeChild(title);
+				document.body.removeChild(msgObj);
+			}
+			document.body.appendChild(msgObj);
+			document.getElementById("msgDiv").appendChild(title);
+			var txt = document.createElement("p");
+			txt.style.margin = "1em 0"
+			txt.setAttribute("id", "msgTxt");
+			txt.innerHTML = "<span style='color:red;'>更新日期：2021年7月15日</span><strong><span style='font-size:15px;'><br>苹果：<br></span></strong>5s代以后所有机型<br><span style='font-size:10px; color:red;'>7代之前机型可能会出现轻微卡顿</span>";
+			txt.innerHTML += "<strong><span style='font-size:15px;'><br><br>小米及红米系列：<br></span></strong>小米10 获取失败<br>小米10至尊版 正常<br>小米11 正常<br>小米11pro 正常<br>小米10s 正常<br>小米11青春版 正常<br>红米10x 正常<br>红米k30 正常<br>红米Note9 正常<br>红米note8 正常<br>红米k40pro 正常<br>红米k40 正常<br>红米k30 正常<br>红米k30s正常<br><br><strong><span style='font-size:15px;'>华为及荣耀系列：<br></span></strong>";
+			txt.innerHTML += "<span style='font-size:10px; color:red;'>华为p系列、Mate系列及荣耀部分机型，因其摄像头协议问题，可能导致焦距过长及对焦缓慢，影响扫码速度</span><br>Mate40摄像头缩放问题<br>Mate40rs保时捷设计 正常<br>p40系列部分不正常<br>Mate30正常 <br>P30pro摄像头缩放问题<br>p20系列部分摄像头缩放问题<br>nova7 正常<br>nova7p正常<br>nova8正常<br>nova8pro正常<br>畅享20pro正常<br>畅享20plus正常<br>畅享20se正常<br>荣耀30s摄像头缩放问题<br>荣耀30正常<br>荣耀v40轻奢版 正常<br>荣耀v40正常<br><br><strong><span style='font-size:15px;'>vivo系列：</span></strong><br>vivo y30正常<br>vivo s9正常<br>vivo x60pro正常<br>Vivo IQoo7 正常";
+			document.getElementById("msgDiv").appendChild(txt);
+		}
+		window.mobileCheck = function () {
+			let check = false;
+			(function (a) { if (/(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|mobile.+firefox|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows ce|xda|xiino/i.test(a) || /1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a wa|abac|ac(er|oo|s\-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|\-m|r |s )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw\-(n|u)|c55\/|capi|ccwa|cdm\-|cell|chtm|cldc|cmd\-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc\-s|devi|dica|dmob|do(c|p)o|ds(12|\-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(\-|_)|g1 u|g560|gene|gf\-5|g\-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd\-(m|p|t)|hei\-|hi(pt|ta)|hp( i|ip)|hs\-c|ht(c(\-| |_|a|g|p|s|t)|tp)|hu(aw|tc)|i\-(20|go|ma)|i230|iac( |\-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt( |\/)|klon|kpt |kwc\-|kyo(c|k)|le(no|xi)|lg( g|\/(k|l|u)|50|54|\-[a-w])|libw|lynx|m1\-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m\-cr|me(rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(\-| |o|v)|zz)|mt(50|p1|v )|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)\-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|\-([1-8]|c))|phil|pire|pl(ay|uc)|pn\-2|po(ck|rt|se)|prox|psio|pt\-g|qa\-a|qc(07|12|21|32|60|\-[2-7]|i\-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h\-|oo|p\-)|sdk\/|se(c(\-|0|1)|47|mc|nd|ri)|sgh\-|shar|sie(\-|m)|sk\-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h\-|v\-|v )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl\-|tdg\-|tel(i|m)|tim\-|t\-mo|to(pl|sh)|ts(70|m\-|m3|m5)|tx\-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|\-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(\-| )|webc|whit|wi(g |nc|nw)|wmlb|wonu|x700|yas\-|your|zeto|zte\-/i.test(a.substr(0, 4))) check = true; })(navigator.userAgent || navigator.vendor || window.opera);
+			return check;
+		};
+		var isMobile = window.mobileCheck();
+		if (typeof window.orientation == 'undefined') { 
+			isMobile = false;
+		}
+		if (isMobile == false) {
+			//window.location.href = "./mountain/index.html";
+		}
+		var geometry_array = new Array(3);
+		var total_frames = [1, 1, 1];
+		let size = 10, segmentX = 25, segmentY = 18;
+		function create_empty_geometry(num_model) {
+			geometry_array[num_model] = [];
+			for (let a = 0; a < 400; a++) {
+				geometry_array[num_model][a] = new THREE.PlaneGeometry(size, size * segmentX / segmentY, segmentY - 1, segmentX - 1);
+			}
+		}
+		create_empty_geometry(0);
+		create_empty_geometry(1);
+		create_empty_geometry(2);
+		var scene = new THREE.Scene();
+		var width = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+		var height = Math.max(document.documentElement.clientHeight, window.innerHeight || 0)
+		var zFactor = height / width * 0.6;
+		var s = 20;
+		// camera = new THREE.Camera();
+		camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 1000);
+		// camera.position.set( 4, 2, 0 );
+		scene.add(camera);
+		var point = new THREE.PointLight(0xffffff);
+		point.position.set(400, 200, 300);
+		scene.add(point);
+		var ambient = new THREE.AmbientLight(0x444444);
+		scene.add(ambient);
+		canvas = document.getElementById("canvas");
+		var renderer = new THREE.WebGLRenderer({
+			antialias: true,
+			alpha: true,
+			canvas: canvas
+		});
+		var devicePixelRatio = window.devicePixelRatio;
+		renderer.setPixelRatio(devicePixelRatio);
+		renderer.setClearColor(new THREE.Color('lightgrey'), 0)
+		renderer.setSize(640, 480);
+		renderer.domElement.style.position = 'absolute'
+		renderer.domElement.style.top = '0px'
+		renderer.domElement.style.left = '0px'
+		function render() {
+			renderer.render(scene, camera);
+		}
+		render();
+		// add gesture control 
+		const controls = new THREE.OrbitControls(camera, renderer.domElement);
+		controls.enableDamping = true; // an animation loop is required when either damping or auto-rotation are enabled
+		controls.dampingFactor = 0.05;
+		controls.screenSpacePanning = false;
+		// controls.autoRotate = true;
+		// controls.minDistance = 40;
+		// controls.maxDistance = 500;
+		controls.maxPolarAngle = Math.PI / 2;
+		// controls.maxPolarAngle = 0;
+		controls.update();
+		function onWindowResize() {
+			camera.aspect = Math.max(document.documentElement.clientWidth, window.innerWidth || 0) / Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
+			camera.updateProjectionMatrix();
+			render.setSize(Math.max(document.documentElement.clientWidth, window.innerWidth || 0), Math.max(document.documentElement.clientHeight, window.innerHeight || 0));
+			controls.update();
+		}
+		var onRenderFcts = [];
+		var barcode_group = [0, 0, 0];
+		var arToolkitSource = new THREEx.ArToolkitSource({
+			sourceType: 'webcam',
+		})
+		arToolkitSource.init(function onReady() {
+			setTimeout(() => {
+				resize_ok = 1;
+			}, 2000);
+			if (arToolkitContext.arController !== null) {
+				arToolkitContext.arController.setPatternDetectionMode(artoolkit.AR_MATRIX_CODE_DETECTION);
+				arToolkitContext.arController.setMatrixCodeType(artoolkit.AR_MATRIX_CODE_4x4);
+			}
+		})
+		window.addEventListener('resize', function () {
+			onResize()
+		})
+		function onResize() {
+			arToolkitSource.onResizeElement()
+			arToolkitSource.copyElementSizeTo(renderer.domElement)
+			if (arToolkitContext.arController !== null) {
+				arToolkitSource.copyElementSizeTo(arToolkitContext.arController.canvas)
+			}
+		}
+		var arToolkitContext = new THREEx.ArToolkitContext({
+			cameraParametersUrl: 'camera_para.dat',
+			detectionMode: 'mono_and_matrix',
+			matrixCodeType: '4x4',
+			labelingMode: 'black_region',
+		})
+		arToolkitContext.init(function onCompleted() {
+			camera.projectionMatrix.copy(arToolkitContext.getProjectionMatrix());
+			controls.update();
+			onResize();
+		})
+		var resize_ok = 0;
+		onRenderFcts.push(function () {
+			if (arToolkitContext.arController !== null && arToolkitContext.arController.canvas.height < 100) { return }
+			else if (!resize_ok) {
+				onResize();
+			} else if (resize_ok) {
+				var el = document.getElementById("text");
+				el.style.bottom = "10px";
+				el.style.textAlign = "center";
+			}
+			arToolkitContext.update(arToolkitSource.domElement)
+		})
+		scene.visible = true;
+		var group0 = new THREE.Group;
+		var group1 = new THREE.Group;
+		var group2 = new THREE.Group;
+		var num = [1, 1, 1];
+		var distance1DPulse = -4;
+		var distanceBreathPulse = -6.5;
+		var C_y0, C_z0;
+		var pulseType = 0; // ['正常脉 normal pulse', '二联脉 dicrotic pulse', '奇脉 pulsus paradoxus', '跳3停1 pulsus alternans']
+		var frame_info, frame_color_info;
+		var jet = [[0.000, [0.000, 0.000, 0.500]], [0.002, [0.000, 0.000, 0.500]], [0.004, [0.000, 0.000, 0.518]], [0.006, [0.000, 0.000, 0.518]], [0.008, [0.000, 0.000, 0.536]], [0.010, [0.000, 0.000, 0.536]], [0.012, [0.000, 0.000, 0.553]], [0.014, [0.000, 0.000, 0.553]], [0.016, [0.000, 0.000, 0.571]], [0.018, [0.000, 0.000, 0.571]], [0.020, [0.000, 0.000, 0.589]], [0.022, [0.000, 0.000, 0.589]], [0.023, [0.000, 0.000, 0.607]], [0.025, [0.000, 0.000, 0.607]], [0.027, [0.000, 0.000, 0.625]], [0.029, [0.000, 0.000, 0.625]], [0.031, [0.000, 0.000, 0.643]], [0.033, [0.000, 0.000, 0.643]], [0.035, [0.000, 0.000, 0.660]], [0.037, [0.000, 0.000, 0.660]], [0.039, [0.000, 0.000, 0.678]], [0.041, [0.000, 0.000, 0.678]], [0.043, [0.000, 0.000, 0.696]], [0.045, [0.000, 0.000, 0.696]], [0.047, [0.000, 0.000, 0.714]], [0.049, [0.000, 0.000, 0.714]], [0.051, [0.000, 0.000, 0.732]], [0.053, [0.000, 0.000, 0.732]], [0.055, [0.000, 0.000, 0.750]], [0.057, [0.000, 0.000, 0.750]], [0.059, [0.000, 0.000, 0.767]], [0.061, [0.000, 0.000, 0.767]], [0.063, [0.000, 0.000, 0.785]], [0.065, [0.000, 0.000, 0.785]], [0.067, [0.000, 0.000, 0.803]], [0.068, [0.000, 0.000, 0.803]], [0.070, [0.000, 0.000, 0.821]], [0.072, [0.000, 0.000, 0.821]], [0.074, [0.000, 0.000, 0.839]], [0.076, [0.000, 0.000, 0.839]], [0.078, [0.000, 0.000, 0.857]], [0.080, [0.000, 0.000, 0.857]], [0.082, [0.000, 0.000, 0.874]], [0.084, [0.000, 0.000, 0.874]], [0.086, [0.000, 0.000, 0.892]], [0.088, [0.000, 0.000, 0.892]], [0.090, [0.000, 0.000, 0.910]], [0.092, [0.000, 0.000, 0.910]], [0.094, [0.000, 0.000, 0.928]], [0.096, [0.000, 0.000, 0.928]], [0.098, [0.000, 0.000, 0.946]], [0.100, [0.000, 0.000, 0.946]], [0.102, [0.000, 0.000, 0.963]], [0.104, [0.000, 0.000, 0.963]], [0.106, [0.000, 0.000, 0.981]], [0.108, [0.000, 0.000, 0.981]], [0.110, [0.000, 0.000, 0.999]], [0.112, [0.000, 0.000, 0.999]], [0.114, [0.000, 0.000, 1.000]], [0.115, [0.000, 0.000, 1.000]], [0.117, [0.000, 0.000, 1.000]], [0.119, [0.000, 0.000, 1.000]], [0.121, [0.000, 0.000, 1.000]], [0.123, [0.000, 0.000, 1.000]], [0.125, [0.000, 0.002, 1.000]], [0.127, [0.000, 0.002, 1.000]], [0.129, [0.000, 0.018, 1.000]], [0.131, [0.000, 0.018, 1.000]], [0.133, [0.000, 0.033, 1.000]], [0.135, [0.000, 0.033, 1.000]], [0.137, [0.000, 0.049, 1.000]], [0.139, [0.000, 0.049, 1.000]], [0.141, [0.000, 0.065, 1.000]], [0.143, [0.000, 0.065, 1.000]], [0.145, [0.000, 0.080, 1.000]], [0.147, [0.000, 0.080, 1.000]], [0.149, [0.000, 0.096, 1.000]], [0.151, [0.000, 0.096, 1.000]], [0.153, [0.000, 0.112, 1.000]], [0.155, [0.000, 0.112, 1.000]], [0.157, [0.000, 0.127, 1.000]], [0.159, [0.000, 0.127, 1.000]], [0.160, [0.000, 0.143, 1.000]], [0.162, [0.000, 0.143, 1.000]], [0.164, [0.000, 0.159, 1.000]], [0.166, [0.000, 0.159, 1.000]], [0.168, [0.000, 0.175, 1.000]], [0.170, [0.000, 0.175, 1.000]], [0.172, [0.000, 0.190, 1.000]], [0.174, [0.000, 0.190, 1.000]], [0.176, [0.000, 0.206, 1.000]], [0.178, [0.000, 0.206, 1.000]], [0.180, [0.000, 0.222, 1.000]], [0.182, [0.000, 0.222, 1.000]], [0.184, [0.000, 0.237, 1.000]], [0.186, [0.000, 0.237, 1.000]], [0.188, [0.000, 0.253, 1.000]], [0.190, [0.000, 0.253, 1.000]], [0.192, [0.000, 0.269, 1.000]], [0.194, [0.000, 0.269, 1.000]], [0.196, [0.000, 0.284, 1.000]], [0.198, [0.000, 0.284, 1.000]], [0.200, [0.000, 0.300, 1.000]], [0.202, [0.000, 0.300, 1.000]], [0.204, [0.000, 0.316, 1.000]], [0.205, [0.000, 0.316, 1.000]], [0.207, [0.000, 0.331, 1.000]], [0.209, [0.000, 0.331, 1.000]], [0.211, [0.000, 0.347, 1.000]], [0.213, [0.000, 0.347, 1.000]], [0.215, [0.000, 0.363, 1.000]], [0.217, [0.000, 0.363, 1.000]], [0.219, [0.000, 0.378, 1.000]], [0.221, [0.000, 0.378, 1.000]], [0.223, [0.000, 0.394, 1.000]], [0.225, [0.000, 0.394, 1.000]], [0.227, [0.000, 0.410, 1.000]], [0.229, [0.000, 0.410, 1.000]], [0.231, [0.000, 0.425, 1.000]], [0.233, [0.000, 0.425, 1.000]], [0.235, [0.000, 0.441, 1.000]], [0.237, [0.000, 0.441, 1.000]], [0.239, [0.000, 0.457, 1.000]], [0.241, [0.000, 0.457, 1.000]], [0.243, [0.000, 0.473, 1.000]], [0.245, [0.000, 0.473, 1.000]], [0.247, [0.000, 0.488, 1.000]], [0.249, [0.000, 0.488, 1.000]], [0.250, [0.000, 0.504, 1.000]], [0.252, [0.000, 0.504, 1.000]], [0.254, [0.000, 0.520, 1.000]], [0.256, [0.000, 0.520, 1.000]], [0.258, [0.000, 0.535, 1.000]], [0.260, [0.000, 0.535, 1.000]], [0.262, [0.000, 0.551, 1.000]], [0.264, [0.000, 0.551, 1.000]], [0.266, [0.000, 0.567, 1.000]], [0.268, [0.000, 0.567, 1.000]], [0.270, [0.000, 0.582, 1.000]], [0.272, [0.000, 0.582, 1.000]], [0.274, [0.000, 0.598, 1.000]], [0.276, [0.000, 0.598, 1.000]], [0.278, [0.000, 0.614, 1.000]], [0.280, [0.000, 0.614, 1.000]], [0.282, [0.000, 0.629, 1.000]], [0.284, [0.000, 0.629, 1.000]], [0.286, [0.000, 0.645, 1.000]], [0.288, [0.000, 0.645, 1.000]], [0.290, [0.000, 0.661, 1.000]], [0.292, [0.000, 0.661, 1.000]], [0.294, [0.000, 0.676, 1.000]], [0.295, [0.000, 0.676, 1.000]], [0.297, [0.000, 0.692, 1.000]], [0.299, [0.000, 0.692, 1.000]], [0.301, [0.000, 0.708, 1.000]], [0.303, [0.000, 0.708, 1.000]], [0.305, [0.000, 0.724, 1.000]], [0.307, [0.000, 0.724, 1.000]], [0.309, [0.000, 0.739, 1.000]], [0.311, [0.000, 0.739, 1.000]], [0.313, [0.000, 0.755, 1.000]], [0.315, [0.000, 0.755, 1.000]], [0.317, [0.000, 0.771, 1.000]], [0.319, [0.000, 0.771, 1.000]], [0.321, [0.000, 0.786, 1.000]], [0.323, [0.000, 0.786, 1.000]], [0.325, [0.000, 0.802, 1.000]], [0.327, [0.000, 0.802, 1.000]], [0.329, [0.000, 0.818, 1.000]], [0.331, [0.000, 0.818, 1.000]], [0.333, [0.000, 0.833, 1.000]], [0.335, [0.000, 0.833, 1.000]], [0.337, [0.000, 0.849, 1.000]], [0.339, [0.000, 0.849, 1.000]], [0.341, [0.000, 0.865, 0.996]], [0.342, [0.000, 0.865, 0.996]], [0.344, [0.000, 0.880, 0.984]], [0.346, [0.000, 0.880, 0.984]], [0.348, [0.000, 0.896, 0.971]], [0.350, [0.000, 0.896, 0.971]], [0.352, [0.009, 0.912, 0.958]], [0.354, [0.009, 0.912, 0.958]], [0.356, [0.022, 0.927, 0.946]], [0.358, [0.022, 0.927, 0.946]], [0.360, [0.035, 0.943, 0.933]], [0.362, [0.035, 0.943, 0.933]], [0.364, [0.047, 0.959, 0.920]], [0.366, [0.047, 0.959, 0.920]], [0.368, [0.060, 0.975, 0.908]], [0.370, [0.060, 0.975, 0.908]], [0.372, [0.073, 0.990, 0.895]], [0.374, [0.073, 0.990, 0.895]], [0.376, [0.085, 1.000, 0.882]], [0.378, [0.085, 1.000, 0.882]], [0.380, [0.098, 1.000, 0.870]], [0.382, [0.098, 1.000, 0.870]], [0.384, [0.111, 1.000, 0.857]], [0.386, [0.111, 1.000, 0.857]], [0.387, [0.123, 1.000, 0.844]], [0.389, [0.123, 1.000, 0.844]], [0.391, [0.136, 1.000, 0.832]], [0.393, [0.136, 1.000, 0.832]], [0.395, [0.149, 1.000, 0.819]], [0.397, [0.149, 1.000, 0.819]], [0.399, [0.161, 1.000, 0.806]], [0.401, [0.161, 1.000, 0.806]], [0.403, [0.174, 1.000, 0.794]], [0.405, [0.174, 1.000, 0.794]], [0.407, [0.187, 1.000, 0.781]], [0.409, [0.187, 1.000, 0.781]], [0.411, [0.199, 1.000, 0.769]], [0.413, [0.199, 1.000, 0.769]], [0.415, [0.212, 1.000, 0.756]], [0.417, [0.212, 1.000, 0.756]], [0.419, [0.225, 1.000, 0.743]], [0.421, [0.225, 1.000, 0.743]], [0.423, [0.237, 1.000, 0.731]], [0.425, [0.237, 1.000, 0.731]], [0.427, [0.250, 1.000, 0.718]], [0.429, [0.250, 1.000, 0.718]], [0.431, [0.262, 1.000, 0.705]], [0.432, [0.262, 1.000, 0.705]], [0.434, [0.275, 1.000, 0.693]], [0.436, [0.275, 1.000, 0.693]], [0.438, [0.288, 1.000, 0.680]], [0.440, [0.288, 1.000, 0.680]], [0.442, [0.300, 1.000, 0.667]], [0.444, [0.300, 1.000, 0.667]], [0.446, [0.313, 1.000, 0.655]], [0.448, [0.313, 1.000, 0.655]], [0.450, [0.326, 1.000, 0.642]], [0.452, [0.326, 1.000, 0.642]], [0.454, [0.338, 1.000, 0.629]], [0.456, [0.338, 1.000, 0.629]], [0.458, [0.351, 1.000, 0.617]], [0.460, [0.351, 1.000, 0.617]], [0.462, [0.364, 1.000, 0.604]], [0.464, [0.364, 1.000, 0.604]], [0.466, [0.376, 1.000, 0.591]], [0.468, [0.376, 1.000, 0.591]], [0.470, [0.389, 1.000, 0.579]], [0.472, [0.389, 1.000, 0.579]], [0.474, [0.402, 1.000, 0.566]], [0.476, [0.402, 1.000, 0.566]], [0.477, [0.414, 1.000, 0.553]], [0.479, [0.414, 1.000, 0.553]], [0.481, [0.427, 1.000, 0.541]], [0.483, [0.427, 1.000, 0.541]], [0.485, [0.440, 1.000, 0.528]], [0.487, [0.440, 1.000, 0.528]], [0.489, [0.452, 1.000, 0.515]], [0.491, [0.452, 1.000, 0.515]], [0.493, [0.465, 1.000, 0.503]], [0.495, [0.465, 1.000, 0.503]], [0.497, [0.478, 1.000, 0.490]], [0.499, [0.478, 1.000, 0.490]], [0.501, [0.490, 1.000, 0.478]], [0.503, [0.490, 1.000, 0.478]], [0.505, [0.503, 1.000, 0.465]], [0.507, [0.503, 1.000, 0.465]], [0.509, [0.515, 1.000, 0.452]], [0.511, [0.515, 1.000, 0.452]], [0.513, [0.528, 1.000, 0.440]], [0.515, [0.528, 1.000, 0.440]], [0.517, [0.541, 1.000, 0.427]], [0.519, [0.541, 1.000, 0.427]], [0.521, [0.553, 1.000, 0.414]], [0.523, [0.553, 1.000, 0.414]], [0.524, [0.566, 1.000, 0.402]], [0.526, [0.566, 1.000, 0.402]], [0.528, [0.579, 1.000, 0.389]], [0.530, [0.579, 1.000, 0.389]], [0.532, [0.591, 1.000, 0.376]], [0.534, [0.591, 1.000, 0.376]], [0.536, [0.604, 1.000, 0.364]], [0.538, [0.604, 1.000, 0.364]], [0.540, [0.617, 1.000, 0.351]], [0.542, [0.617, 1.000, 0.351]], [0.544, [0.629, 1.000, 0.338]], [0.546, [0.629, 1.000, 0.338]], [0.548, [0.642, 1.000, 0.326]], [0.550, [0.642, 1.000, 0.326]], [0.552, [0.655, 1.000, 0.313]], [0.554, [0.655, 1.000, 0.313]], [0.556, [0.667, 1.000, 0.300]], [0.558, [0.667, 1.000, 0.300]], [0.560, [0.680, 1.000, 0.288]], [0.562, [0.680, 1.000, 0.288]], [0.564, [0.693, 1.000, 0.275]], [0.566, [0.693, 1.000, 0.275]], [0.568, [0.705, 1.000, 0.262]], [0.569, [0.705, 1.000, 0.262]], [0.571, [0.718, 1.000, 0.250]], [0.573, [0.718, 1.000, 0.250]], [0.575, [0.731, 1.000, 0.237]], [0.577, [0.731, 1.000, 0.237]], [0.579, [0.743, 1.000, 0.225]], [0.581, [0.743, 1.000, 0.225]], [0.583, [0.756, 1.000, 0.212]], [0.585, [0.756, 1.000, 0.212]], [0.587, [0.769, 1.000, 0.199]], [0.589, [0.769, 1.000, 0.199]], [0.591, [0.781, 1.000, 0.187]], [0.593, [0.781, 1.000, 0.187]], [0.595, [0.794, 1.000, 0.174]], [0.597, [0.794, 1.000, 0.174]], [0.599, [0.806, 1.000, 0.161]], [0.601, [0.806, 1.000, 0.161]], [0.603, [0.819, 1.000, 0.149]], [0.605, [0.819, 1.000, 0.149]], [0.607, [0.832, 1.000, 0.136]], [0.609, [0.832, 1.000, 0.136]], [0.611, [0.844, 1.000, 0.123]], [0.613, [0.844, 1.000, 0.123]], [0.614, [0.857, 1.000, 0.111]], [0.616, [0.857, 1.000, 0.111]], [0.618, [0.870, 1.000, 0.098]], [0.620, [0.870, 1.000, 0.098]], [0.622, [0.882, 1.000, 0.085]], [0.624, [0.882, 1.000, 0.085]], [0.626, [0.895, 1.000, 0.073]], [0.628, [0.895, 1.000, 0.073]], [0.630, [0.908, 1.000, 0.060]], [0.632, [0.908, 1.000, 0.060]], [0.634, [0.920, 1.000, 0.047]], [0.636, [0.920, 1.000, 0.047]], [0.638, [0.933, 1.000, 0.035]], [0.640, [0.933, 1.000, 0.035]], [0.642, [0.946, 0.988, 0.022]], [0.644, [0.946, 0.988, 0.022]], [0.646, [0.958, 0.974, 0.009]], [0.648, [0.958, 0.974, 0.009]], [0.650, [0.971, 0.959, 0.000]], [0.652, [0.971, 0.959, 0.000]], [0.654, [0.984, 0.945, 0.000]], [0.656, [0.984, 0.945, 0.000]], [0.658, [0.996, 0.930, 0.000]], [0.659, [0.996, 0.930, 0.000]], [0.661, [1.000, 0.916, 0.000]], [0.663, [1.000, 0.916, 0.000]], [0.665, [1.000, 0.901, 0.000]], [0.667, [1.000, 0.901, 0.000]], [0.669, [1.000, 0.887, 0.000]], [0.671, [1.000, 0.887, 0.000]], [0.673, [1.000, 0.872, 0.000]], [0.675, [1.000, 0.872, 0.000]], [0.677, [1.000, 0.858, 0.000]], [0.679, [1.000, 0.858, 0.000]], [0.681, [1.000, 0.843, 0.000]], [0.683, [1.000, 0.843, 0.000]], [0.685, [1.000, 0.829, 0.000]], [0.687, [1.000, 0.829, 0.000]], [0.689, [1.000, 0.814, 0.000]], [0.691, [1.000, 0.814, 0.000]], [0.693, [1.000, 0.800, 0.000]], [0.695, [1.000, 0.800, 0.000]], [0.697, [1.000, 0.785, 0.000]], [0.699, [1.000, 0.785, 0.000]], [0.701, [1.000, 0.771, 0.000]], [0.703, [1.000, 0.771, 0.000]], [0.705, [1.000, 0.756, 0.000]], [0.706, [1.000, 0.756, 0.000]], [0.708, [1.000, 0.741, 0.000]], [0.710, [1.000, 0.741, 0.000]], [0.712, [1.000, 0.727, 0.000]], [0.714, [1.000, 0.727, 0.000]], [0.716, [1.000, 0.712, 0.000]], [0.718, [1.000, 0.712, 0.000]], [0.720, [1.000, 0.698, 0.000]], [0.722, [1.000, 0.698, 0.000]], [0.724, [1.000, 0.683, 0.000]], [0.726, [1.000, 0.683, 0.000]], [0.728, [1.000, 0.669, 0.000]], [0.730, [1.000, 0.669, 0.000]], [0.732, [1.000, 0.654, 0.000]], [0.734, [1.000, 0.654, 0.000]], [0.736, [1.000, 0.640, 0.000]], [0.738, [1.000, 0.640, 0.000]], [0.740, [1.000, 0.625, 0.000]], [0.742, [1.000, 0.625, 0.000]], [0.744, [1.000, 0.611, 0.000]], [0.746, [1.000, 0.611, 0.000]], [0.748, [1.000, 0.596, 0.000]], [0.750, [1.000, 0.596, 0.000]], [0.751, [1.000, 0.582, 0.000]], [0.753, [1.000, 0.582, 0.000]], [0.755, [1.000, 0.567, 0.000]], [0.757, [1.000, 0.567, 0.000]], [0.759, [1.000, 0.553, 0.000]], [0.761, [1.000, 0.553, 0.000]], [0.763, [1.000, 0.538, 0.000]], [0.765, [1.000, 0.538, 0.000]], [0.767, [1.000, 0.524, 0.000]], [0.769, [1.000, 0.524, 0.000]], [0.771, [1.000, 0.509, 0.000]], [0.773, [1.000, 0.509, 0.000]], [0.775, [1.000, 0.495, 0.000]], [0.777, [1.000, 0.495, 0.000]], [0.779, [1.000, 0.480, 0.000]], [0.781, [1.000, 0.480, 0.000]], [0.783, [1.000, 0.466, 0.000]], [0.785, [1.000, 0.466, 0.000]], [0.787, [1.000, 0.451, 0.000]], [0.789, [1.000, 0.451, 0.000]], [0.791, [1.000, 0.436, 0.000]], [0.793, [1.000, 0.436, 0.000]], [0.795, [1.000, 0.422, 0.000]], [0.796, [1.000, 0.422, 0.000]], [0.798, [1.000, 0.407, 0.000]], [0.800, [1.000, 0.407, 0.000]], [0.802, [1.000, 0.393, 0.000]], [0.804, [1.000, 0.393, 0.000]], [0.806, [1.000, 0.378, 0.000]], [0.808, [1.000, 0.378, 0.000]], [0.810, [1.000, 0.364, 0.000]], [0.812, [1.000, 0.364, 0.000]], [0.814, [1.000, 0.349, 0.000]], [0.816, [1.000, 0.349, 0.000]], [0.818, [1.000, 0.335, 0.000]], [0.820, [1.000, 0.335, 0.000]], [0.822, [1.000, 0.320, 0.000]], [0.824, [1.000, 0.320, 0.000]], [0.826, [1.000, 0.306, 0.000]], [0.828, [1.000, 0.306, 0.000]], [0.830, [1.000, 0.291, 0.000]], [0.832, [1.000, 0.291, 0.000]], [0.834, [1.000, 0.277, 0.000]], [0.836, [1.000, 0.277, 0.000]], [0.838, [1.000, 0.262, 0.000]], [0.840, [1.000, 0.262, 0.000]], [0.841, [1.000, 0.248, 0.000]], [0.843, [1.000, 0.248, 0.000]], [0.845, [1.000, 0.233, 0.000]], [0.847, [1.000, 0.233, 0.000]], [0.849, [1.000, 0.219, 0.000]], [0.851, [1.000, 0.219, 0.000]], [0.853, [1.000, 0.204, 0.000]], [0.855, [1.000, 0.204, 0.000]], [0.857, [1.000, 0.190, 0.000]], [0.859, [1.000, 0.190, 0.000]], [0.861, [1.000, 0.175, 0.000]], [0.863, [1.000, 0.175, 0.000]], [0.865, [1.000, 0.160, 0.000]], [0.867, [1.000, 0.160, 0.000]], [0.869, [1.000, 0.146, 0.000]], [0.871, [1.000, 0.146, 0.000]], [0.873, [1.000, 0.131, 0.000]], [0.875, [1.000, 0.131, 0.000]], [0.877, [1.000, 0.117, 0.000]], [0.879, [1.000, 0.117, 0.000]], [0.881, [1.000, 0.102, 0.000]], [0.883, [1.000, 0.102, 0.000]], [0.885, [1.000, 0.088, 0.000]], [0.886, [1.000, 0.088, 0.000]], [0.888, [0.999, 0.073, 0.000]], [0.890, [0.999, 0.073, 0.000]], [0.892, [0.981, 0.059, 0.000]], [0.894, [0.981, 0.059, 0.000]], [0.896, [0.963, 0.044, 0.000]], [0.898, [0.963, 0.044, 0.000]], [0.900, [0.946, 0.030, 0.000]], [0.902, [0.946, 0.030, 0.000]], [0.904, [0.928, 0.015, 0.000]], [0.906, [0.928, 0.015, 0.000]], [0.908, [0.910, 0.001, 0.000]], [0.910, [0.910, 0.001, 0.000]], [0.912, [0.892, 0.000, 0.000]], [0.914, [0.892, 0.000, 0.000]], [0.916, [0.874, 0.000, 0.000]], [0.918, [0.874, 0.000, 0.000]], [0.920, [0.857, 0.000, 0.000]], [0.922, [0.857, 0.000, 0.000]], [0.924, [0.839, 0.000, 0.000]], [0.926, [0.839, 0.000, 0.000]], [0.928, [0.821, 0.000, 0.000]], [0.930, [0.821, 0.000, 0.000]], [0.932, [0.803, 0.000, 0.000]], [0.933, [0.803, 0.000, 0.000]], [0.935, [0.785, 0.000, 0.000]], [0.937, [0.785, 0.000, 0.000]], [0.939, [0.767, 0.000, 0.000]], [0.941, [0.767, 0.000, 0.000]], [0.943, [0.750, 0.000, 0.000]], [0.945, [0.750, 0.000, 0.000]], [0.947, [0.732, 0.000, 0.000]], [0.949, [0.732, 0.000, 0.000]], [0.951, [0.714, 0.000, 0.000]], [0.953, [0.714, 0.000, 0.000]], [0.955, [0.696, 0.000, 0.000]], [0.957, [0.696, 0.000, 0.000]], [0.959, [0.678, 0.000, 0.000]], [0.961, [0.678, 0.000, 0.000]], [0.963, [0.660, 0.000, 0.000]], [0.965, [0.660, 0.000, 0.000]], [0.967, [0.643, 0.000, 0.000]], [0.969, [0.643, 0.000, 0.000]], [0.971, [0.625, 0.000, 0.000]], [0.973, [0.625, 0.000, 0.000]], [0.975, [0.607, 0.000, 0.000]], [0.977, [0.607, 0.000, 0.000]], [0.978, [0.589, 0.000, 0.000]], [0.980, [0.589, 0.000, 0.000]], [0.982, [0.571, 0.000, 0.000]], [0.984, [0.571, 0.000, 0.000]], [0.986, [0.553, 0.000, 0.000]], [0.988, [0.553, 0.000, 0.000]], [0.990, [0.536, 0.000, 0.000]], [0.992, [0.536, 0.000, 0.000]], [0.994, [0.518, 0.000, 0.000]], [0.996, [0.518, 0.000, 0.000]], [0.998, [0.500, 0.000, 0.000]], [1.000, [0.500, 0.000, 0.000]]];
+		function create_pulse_model(num_model) {
+			const faceIndices = ['a', 'b', 'c', 'd'];
+			const vertexColorMaterial = new THREE.MeshBasicMaterial(
+				{
+					vertexColors: THREE.VertexColors,
+					side: THREE.DoubleSide,
+					transparent: true,
+					opacity: 0.95
+				});
+			let frame;
+			for (t = 0; t < total_frames[num_model] * 4; t += 4) {
+				geometry = geometry_array[num_model][t];
+				for (k = 0; k < (segmentX); k++) {
+					for (j = 0; j < (segmentY); j++) {
+						geometry.vertices[(j) + ((segmentY) * k)].setZ(frame_info[t][(j) + ((segmentY) * k)]);
+					}
+				}
+				let color, point, face, numberOfSides, vertexIndex;
+				let index = 0;
+				let index_color;
+				for (let i = 0; i < geometry.vertices.length; i++) {
+					point = geometry.vertices[i];
+					color = new THREE.Color(0xffffff);
+					index = frame_color_info[t][i];
+					if (index < 0) {
+						index = 0;
+					}
+					color.setRGB(jet[index][1][0], jet[index][1][1], jet[index][1][2]);
+					geometry.colors[i] = color;
+				}
+				for (let i = 0; i < geometry.faces.length; i++) {
+					face = geometry.faces[i];
+					numberOfSides = (face instanceof THREE.Face3) ? 3 : 4;
+					for (let j = 0; j < numberOfSides; j++) {
+						vertexIndex = face[faceIndices[j]];
+						face.vertexColors[j] = geometry.colors[vertexIndex];
+					}
+				}
+				frame = new THREE.Mesh(geometry, vertexColorMaterial);
+				frame.rotation.x -= Math.PI * 0.5;
+				frame.scale.set(0.4, 0.4, 0.4);
+				eval("obj" + num_model + "_" + t / 4 + "= frame");
+				eval("group" + num_model + ".add(obj" + num_model + "_" + t / 4 + ")");
+				eval("obj" + num_model + "_" + t / 4 + ".visible = false;");
+			}
+		}
+		var scan_ok = [0, 0, 0];
+		
+
+
+		var n_param = [0, 0, 0];
+		var count_period = 0;
+		var breathFrame = [0, 0, 0];
+		var count_ball = 0;
+		async function switchFrame(num_frame, num_model) {
+			n_param[num_model]++;
+
+
+			let period = Math.floor(1 / paramB[num_model]);
+			let Insp = Math.ceil(period / 2);
+			let stepSize = (breathPeriod + 1.5) / total_frames[num_model];
+
+			eval("obj" + num_model + "_1.visible = false;");
+			if (num_frame == 1) {
+
+				eval("obj" + num_model + "_" + Math.trunc(total_frames[num_model] - 2) + ".visible = false;");
+				// eval("obj" + num_model + "_" + (num_frame - 1) + ".scale.z = 0.5 * " + (1 - scale_curve) + ";");
+				// eval("obj" + num_model + "_" + (num_frame - 1) + ".transparent = true;");
+				// eval("obj" + num_model + "_" + (num_frame - 1) + ".material.opacity = " + (1 - scale_curve) + ";");
+				eval("obj" + num_model + "_" + (num_frame - 1) + ".visible = true;");
+			} else {
+				eval("curve[num_model].visible = true;");
+				if (paramA[num_model] !== 0 && paramB[num_model] !== 0) {
+					eval("breathCurve[num_model].visible = true;");
+					eval("curve_verticalDashed[num_model].visible = true;");
+				}
+				eval("curve[3 + num_model].visible = false;");
+				eval("obj" + num_model + "_" + (num_frame - 2) + ".visible = false;");
+				// eval("obj" + num_model + "_" + (num_frame - 1) + ".scale.z = 0.5 * " + (1 - scale_curve) + ";");
+				// eval("obj" + num_model + "_" + (num_frame - 1) + ".transparent = true;");
+				// eval("obj" + num_model + "_" + (num_frame - 1) + ".material.opacity = " + (1 - scale_curve) + ";");
+
+				eval("obj" + num_model + "_" + (num_frame - 1) + ".visible = true;");
+
+			}
+			if (num_frame >= Math.trunc(total_frames[num_model]) - 1) {
+
+
+				if (n_param[num_model] < paramN[num_model] * (Math.trunc(total_frames[num_model]) - 1)) {
+					num[num_model] = 0;
+				} else if (n_param[num_model] < (paramM[num_model] + paramN[num_model]) * total_frames[num_model]) {
+					if (paramN[num_model] !== 1 && paramM[num_model] !== 0) {
+						eval("curve[num_model].visible = false;");
+						eval("curve[3 + num_model].visible = true;");	
+					}
+					num[num_model]--;
+				} else {
+					n_param[num_model] = 0;
+					count_ball = 0;
+					num[num_model] = 0;
+				}	
+			}
+			if (decode_ok[num_model]) {
+				if (n_param[num_model] >= paramN[num_model] * (Math.trunc(total_frames[num_model]) - 1) + 2 && n_param[num_model] < (paramM[num_model] + paramN[num_model]) * total_frames[num_model]) {
+					count_ball += 4/(paramN[num_model] + paramM[num_model]);
+					// eval("ball_1D" + num_model + ".position.setX(" + Math.trunc(total_frames[num_model] - 0) * 4 + "* 0.05 * " + paramN / (paramN + paramM) + "+ 0.05 * " + count_ball + "- 2)");
+					eval("ball_1D" + num_model + ".position.setX(C_x_stop" + num_model + "[" + ((paramM[num_model] + paramN[num_model]) * n_param[num_model]) + "]);");
+					eval("ball_1D" + num_model + ".position.setY(C_y" + num_model + "[" + Math.trunc(total_frames[num_model] - 1) * 4 + "] - C_y" + num_model + "[0]);");
+					eval("ball_1D" + num_model + ".position.setZ(distance1DPulse + (-C_z" + num_model + "[" + Math.trunc(total_frames[num_model] - 1) * 4 + "] + C_z" + num_model + "[0]));");
+					
+				} else { 
+					if (pulseType === 1) {
+						// eval("ball_1D" + num_model + ".position.setX(" + (num_frame - 1) * 2 + "* 0.05 - 2)");
+						eval("ball_1D" + num_model + ".position.setX(C_x" + num_model + "[" + (num_frame - 1) * 4 + "]);");
+						eval("ball_1D" + num_model + ".position.setY(C_y" + num_model + "[" + (num_frame - 1) * 4 + "] - C_y" + num_model + "[0]);");
+						eval("ball_1D" + num_model + ".position.setZ(distance1DPulse + (-C_z" + num_model + "[" + (num_frame - 1) * 4 + "] + C_z" + num_model + "[0]));");
+					} else if (pulseType === 2) {
+						// eval("ball_1D" + num_model + ".position.setX(" + (num_frame - 1) + "* 0.05 - 2)");
+						eval("ball_1D" + num_model + ".position.setX(C_x" + num_model + "[" + (num_frame - 1) * 4 + "]);");
+						eval("ball_1D" + num_model + ".position.setY(C_y" + num_model + "[" + (num_frame - 1) * 4 + "] - C_y" + num_model + "[0]);");
+						eval("ball_1D" + num_model + ".position.setZ(distance1DPulse + (-C_z" + num_model + "[" + (num_frame - 1) * 4 + "] + C_z" + num_model + "[0]));");
+					// } else if (paramN !== 1 || paramM !== 0) {
+					// 	eval("ball_1D" + num_model + ".position.setX(C_x_stop" + num_model + "[" + (num_frame - 1) * 4 + "]);");
+					// 	eval("ball_1D" + num_model + ".position.setY(C_y" + num_model + "[" + (num_frame - 1) * 4 + "] - C_y" + num_model + "[0]);");
+					// 	eval("ball_1D" + num_model + ".position.setZ(distance1DPulse + (-C_z" + num_model + "[" + (num_frame - 1) * 4 + "] + C_z" + num_model + "[0]));");
+					} else {
+						// eval("ball_1D" + num_model + ".position.setX(" + (num_frame - 1) * 4 + "* 0.05 - 2)");
+						eval("ball_1D" + num_model + ".position.setX(C_x" + num_model + "[" + (num_frame - 1) * 4 + "]);");
+						eval("ball_1D" + num_model + ".position.setY(C_y" + num_model + "[" + (num_frame - 1) * 4 + "] - C_y" + num_model + "[0]);");
+						eval("ball_1D" + num_model + ".position.setZ(distance1DPulse + (-C_z" + num_model + "[" + (num_frame - 1) * 4 + "] + C_z" + num_model + "[0]));");
+					}
+
+				}
+
+				// if (paramA !== 0 && paramB !== 0) {
+				if (ball_breath) {
+					if (breathFrame[num_model] >= breathPeriod) {
+						breathFrame[num_model] = 0;
+					}
+
+					// eval("ball_breath" + num_model + ".position.setX(" + breathFrame[num_model] + " * 3 * 0.05 / 2.5 - 2)");
+					eval("ball_breath.position.setX(Breath_x" + num_model + "[" + Math.floor(breathFrame[num_model]) + "*3]);");
+					eval("ball_breath.position.setY(Breath_y" + num_model + "[" + Math.floor(breathFrame[num_model]) + "]);");
+					eval("ball_breath.position.setZ(-Breath_z" + num_model + "[" + Math.floor(breathFrame[num_model]) + "] + distanceBreathPulse);");
+					breathFrame[num_model] += stepSize;
+				}
+
+			}
+		}
+		var id = -1;
+		var bufferCanvas = document.createElement('canvas');
+		var bufferCtx = bufferCanvas.getContext('2d');
+		var crop_index = 0.32;
+		function cropImage(targetCanvas, topLeftX, topLeftY, topRightX, topRightY, bottomLeftX, bottomLeftY, bottomRightX, bottomRightY, flag, angle, str_tmp) {
+			let x, y, width, height, _case, rotate_angle;
+			if (topRightX > topLeftX && topRightY <= topLeftY && topLeftY < bottomLeftY && bottomLeftX >= topLeftX) {
+				x = topLeftX;
+				y = topLeftY;
+				width = Math.sqrt(Math.pow((topRightX - topLeftX), 2) + Math.pow((topRightY - topLeftY), 2));
+				height = Math.sqrt(Math.pow((bottomLeftX - topLeftX), 2) + Math.pow((bottomLeftY - topLeftY), 2));
+				_case = 1;
+				if (angle < -45) {
+					x = topRightX;
+					y = topRightY;
+				} else {
+				}
+			}
+			else if (topRightX <= topLeftX && topRightY < topLeftY && bottomLeftX > topLeftX && topLeftY >= bottomLeftY) {
+				x = topRightX;
+				y = topRightY;
+				width = Math.sqrt(Math.pow((bottomRightX - bottomLeftX), 2) + Math.pow((bottomRightY - bottomLeftY), 2));
+				height = Math.sqrt(Math.pow((bottomRightX - topRightX), 2) + Math.pow((bottomRightY - topRightY), 2));
+				_case = 2;
+				if (angle < 45) {
+					x = bottomRightX;
+					y = bottomRightY;
+				} else {
+				}
+			}
+			else if (topRightX < topLeftX && topRightY >= topLeftY && bottomLeftX <= topLeftX && topLeftY > bottomLeftY) {
+				x = bottomRightX;
+				y = bottomRightY;
+				width = Math.sqrt(Math.pow((topLeftX - bottomLeftX), 2) + Math.pow((topLeftY - bottomLeftY), 2));
+				height = Math.sqrt(Math.pow((bottomRightX - bottomLeftX), 2) + Math.pow((bottomRightY - bottomLeftY), 2));
+				_case = 3;
+				if (angle < -45) {
+					x = bottomLeftX;
+					y = bottomLeftY;
+				} else {
+				}
+			}
+			else {
+				x = bottomLeftX;
+				y = bottomLeftY;
+				width = Math.sqrt(Math.pow((topRightX - topLeftX), 2) + Math.pow((topRightY - topLeftY), 2));
+				height = Math.sqrt(Math.pow((bottomLeftX - topLeftX), 2) + Math.pow((bottomLeftY - topLeftY), 2));
+				_case = 4;
+				if (angle < 45) {
+					x = topLeftX;
+					y = topLeftY;
+				} else {
+				}
+			}
+			if (angle < 5 && angle > -5) {
+				x = x + width * crop_index;
+				y = y + height * crop_index;
+				width = width * (1 - crop_index * 2);
+				height = height * (1 - crop_index * 2);
+			}
+			let targetctx = targetCanvas.getContext('2d');
+			bufferCanvas.width = width;
+			bufferCanvas.height = height;
+			bufferCtx.rect(0, 0, width, width);
+			bufferCtx.fillStyle = 'white';
+			bufferCtx.fill();
+			bufferCtx.translate(width / 2, height / 2);
+			bufferCtx.rotate((-angle + rotate_angle) * Math.PI / 180);
+			bufferCtx.translate(-width / 2, -height / 2);
+			bufferCtx.drawImage(targetCanvas, -x, -y);
+			bufferCtx.rotate((angle - rotate_angle) * Math.PI / 180);
+			document.getElementById(str_tmp).src = bufferCanvas.toDataURL('image/jpeg');
+			document.getElementById(str_tmp).style.display = 'initial';
+		}
+		var code = ['', '', ''];
+		var decode_ok = [0, 0, 0];
+		var create_complete = [0, 0, 0];
+		var artoolkitMarker = [];
+		var markerRoot = [];
+		var curve = [0, 0, 0, 0, 0, 0];
+		markerRoot[0] = new THREE.Group();
+		markerRoot[1] = new THREE.Group();
+		markerRoot[2] = new THREE.Group();
+		var video = document.getElementsByTagName('video')[0];
+		var width;
+		var height;
+		var code_scan = function () {
+			var self = this;
+			self.data = '';
+			self.location = '';
+		};
+		var points;
+		var points_shorten;
+		var breathC;
+		var breathF;
+		var breathPeriod;
+		var breathCurve = [0, 0, 0];
+
+
+		var points_verticalDashed;
+		var curve_verticalDashed = [0, 0, 0];
+		function create_other_info(num_model, info_string) {
+			generateText(num_model, info_string);
+			let bool_right = Number(code[num_model].data.split(';')[15]);
+			// console.log(bool_right);
+			generateHand(num_model, bool_right);
+
+			//3th
+			if (info_string[num_model][3] === 'dicrotic pulse') {
+				paramN[num_model] = 1;
+				paramM[num_model] = 0;
+				paramA[num_model] = 0;
+				paramB[num_model] = 0;
+			} else if (info_string[num_model][3] === 'pulsus paradoxus') {
+				paramN[num_model] = 1;
+				paramM[num_model] = 0;
+				paramA[num_model] = Number(code[num_model].data.split(';')[16]);
+				paramB[num_model] = Number(code[num_model].data.split(';')[17]);
+			} else {
+				paramN[num_model] = Number(code[num_model].data.split(';')[16]);
+				paramM[num_model] = Number(code[num_model].data.split(';')[17]);
+				paramA[num_model] = 0;
+				paramB[num_model] = 0;
+			}
+
+			points_shorten = new Float32Array((total_frames[num_model] * 4 * 3) * (paramN[num_model] + paramM[num_model]));
+			
+
+
+			for (let i = 0; i < paramN[num_model]; i++) {
+				let n = total_frames[num_model] * 4 * 3;
+				for (let j = 0; j < total_frames[num_model] * 4 * 3; j += 3) {
+					points_shorten[i * n + j] = (i * n + j) / 3 * 0.05 / (paramN[num_model] + paramM[num_model]) - 2;
+					points_shorten[i * n + j + 1] = 0;
+					points_shorten[i * n + j + 2] = points[j + 2];
+				}
+			}
+
+			for (let i = (total_frames[num_model] * 4 * 3) * paramN[num_model]; i < (total_frames[num_model] * 4 * 3) * (paramN[num_model] + paramM[num_model]); i += 3) {
+				points_shorten[i] = i / 3 * 0.05 / (paramN[num_model] + paramM[num_model]) - 2;
+				points_shorten[i + 1] = 0;
+				points_shorten[i + 2] = points[total_frames[num_model] * 4 * 3 - 1];
+			}
+
+
+
+			const line = new MeshLine();
+			const line_shorten = new MeshLine();
+			
+			line.setGeometry(points);
+			line_shorten.setGeometry(points_shorten);
+			
+			let material = new MeshLineMaterial({
+				useMap: false,
+				color: new THREE.Color(0x006699),
+				opacity: 1,
+				resolution: resolution,
+				sizeAttenuation: false,
+				lineWidth: 3,
+			});
+
+			curve[num_model] = new THREE.Mesh(line, material);
+			curve[num_model].position.z = distance1DPulse;
+			curve[num_model].rotateX(Math.PI);
+			eval("group" + num_model + ".add(curve[num_model]);");
+			eval("curve[num_model].visible = false;");
+
+			curve[3 + num_model] = new THREE.Mesh(line_shorten, material);
+			curve[3 + num_model].position.z = distance1DPulse;
+			curve[3 + num_model].rotateX(Math.PI);
+			eval("group" + num_model + ".add(curve[3 + num_model]);");
+			eval("curve[3 + num_model].visible = false;");
+
+
+			const ballGeometry = new THREE.SphereGeometry(0.08, 32, 32);
+			const ballMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+			eval("ball_1D" + num_model + " = new THREE.Mesh(ballGeometry, ballMaterial);");
+			eval("ball_1D" + num_model + ".position.set(0, 0, distance1DPulse);");
+			eval("ball_1D" + num_model + ".renderOrder = 1;");
+			eval("group" + num_model + ".add(ball_1D" + num_model + ");");
+			eval("C_x_stop" + num_model + "= new Array(total_frames[" + num_model + "] * 4 * " + (paramN[num_model] + paramM[num_model]) + ").fill(0);");
+			eval("C_x" + num_model + "= new Array(total_frames[" + num_model + "]*4);");
+			eval("C_y" + num_model + "= new Array(total_frames[" + num_model + "]*4);");
+			eval("C_z" + num_model + "= new Array(total_frames[" + num_model + "]*4);");
+			for (let i = 0; i < total_frames[num_model] * 4; i++) {
+				eval("C_x" + num_model + "[i] = points[i*3];");
+				eval("C_y" + num_model + "[i] = 0;");
+				eval("C_z" + num_model + "[i] = points[i*3+2];");
+			}
+			for (let i = total_frames[num_model] * 4; i < total_frames[num_model] * 4 * (paramN[num_model] + paramM[num_model]); i++) {
+				eval("C_x_stop" + num_model + "[i] = points_shorten[i*3];");
+			}
+
+			if (paramA[num_model] !== 0 && paramB[num_model] !== 0) {
+				breathPeriod = Math.ceil(2 * Math.PI / 0.1);
+				breathC = new Float32Array(breathPeriod * 3 + 3); // breath 
+				breathF = new Float32Array(breathPeriod * 3 + 3); // breath function
+				eval("Breath_x" + num_model + "= new Array(breathPeriod * 3 + 1);");
+				points_verticalDashed = new Float32Array(3 * 15);
+				for (let i = 0; i <= breathPeriod * 3; i += 3) {
+					breathC[i] = i * 0.05 / 2.5  - 2;
+					breathC[i + 1] = 0;
+					breathC[i + 2] = 0.2 * Math.sin(0.1 * i / 6);
+				}
+
+				for (let i = 0; i <= breathPeriod * 3; i += 3) {
+					breathF[i] = breathC[i];
+					eval("Breath_x" + num_model + "[i] = breathF[i];");
+					breathF[i + 1] = 0;
+					breathF[i + 2] = 5 * breathC[i + 2];
+				}
+
+
+				for (let i = 0; i < points_verticalDashed.length; i += 3) {
+					points_verticalDashed[i] = (breathPeriod * 3 - 3) / 2 / 2.5 * 0.05 - 2;
+					points_verticalDashed[i + 1] = 0;
+					points_verticalDashed[i + 2] = breathC[2] + i * 0.05 - 1;
+				}
+
+				const line_breath = new MeshLine();
+				const line_verticalDashed = new MeshLine();
+
+				line_breath.setGeometry(breathF);
+				line_verticalDashed.setGeometry(points_verticalDashed);
+
+				let material_dashed = new MeshLineMaterial({
+					useMap: false,
+					color: new THREE.Color(0xff0000),
+					opacity: 1,
+					resolution: resolution,
+					sizeAttenuation: false,
+					lineWidth: 3,
+					dashOffset: 0.1,
+					dashArray: 0.1,
+					dashRatio: 0.5,
+				});
+				curve_verticalDashed[num_model] = new THREE.Mesh(line_verticalDashed, material_dashed);
+				curve_verticalDashed[num_model].position.z = distanceBreathPulse - 0.3;
+				curve_verticalDashed[num_model].rotateX(Math.PI);
+				eval("group" + num_model + ".add(curve_verticalDashed[num_model]);");
+				eval("curve_verticalDashed[num_model].visible = false;");
+
+				breathCurve[num_model] = new THREE.Mesh(line_breath, material);
+				breathCurve[num_model].position.z = distanceBreathPulse;
+				breathCurve[num_model].rotateX(Math.PI);
+				eval("group" + num_model + ".add(breathCurve[num_model]);");
+				eval("breathCurve[num_model].visible = false;");
+
+				
+				const breathBallGeometry = new THREE.SphereGeometry(0.08, 32, 32);
+				const breathBallMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+				ball_breath = new THREE.Mesh(breathBallGeometry, breathBallMaterial);
+				ball_breath.position.set(0, 0, distanceBreathPulse);
+				ball_breath.renderOrder = 1;
+				eval("group" + num_model + ".add(ball_breath);");
+				eval("Breath_y" + num_model + "= new Array(breathPeriod + 1);");
+				eval("Breath_z" + num_model + "= new Array(breathPeriod + 1);");
+				for (let i = 0; i <= breathPeriod; i++) {
+					eval("Breath_y" + num_model + "[i] = 0;");
+					eval("Breath_z" + num_model + "[i] = breathF[i*3+2];");
+				}
+
+			}
+
+
+			
+		}
+		function generateText(num_model, info_string) {
+			loader.load('fonts/helvetiker_regular.typeface.json', function (font) {
+				const arr_text = new Array('GNDR', 'AGE', 'BMI', 'PLS');
+				
+				const GNDR = "GNDR:  " + info_string[num_model][0];
+				const AGE = "AGE:  " + info_string[num_model][1];
+				const BMI = "BMI:  " + info_string[num_model][2];
+				const PLS = "PLS:  " + info_string[num_model][3];
+				const AIx = "AIx:  " + code[num_model].data.split(';')[14]; //3th
+				// let AIx = "AIx:  " + code[num_model].data.split(';')[17]; //4th
+				const Inspiration = "Inspiration";
+				const Expiration = "Expiration";
+				
+				const matLite_blue = new THREE.MeshBasicMaterial({
+					color: new THREE.Color(0x006699),
+					transparent: true,
+					opacity: 0.8,
+					side: THREE.DoubleSide
+				});
+				const matLite_red = new THREE.MeshBasicMaterial({
+					color: new THREE.Color(0xB0171F),
+					transparent: true,
+					opacity: 0.8,
+					side: THREE.DoubleSide
+				});
+				// const matLite_yellow = new THREE.MeshBasicMaterial({
+				// 	color: new THREE.Color(0xFFFF00),
+				// 	transparent: true,
+				// 	opacity: 0.8,
+				// 	side: THREE.DoubleSide
+				// });
+				let shapes, geometry, mesh;
+				
+				for (let i = 0; i < arr_text.length; i++) {
+					eval("shapes = font.generateShapes( " + arr_text[i] + " , 100 );");
+					geometry = new THREE.ShapeBufferGeometry(shapes);
+					switch (i) {
+						case 0: // gender
+							mesh = new THREE.Mesh(geometry, matLite_blue);
+							break;
+						case 1: // age
+							mesh = new THREE.Mesh(geometry, matLite_blue);
+							break;
+						case 2: // BMI
+							if (info_string[num_model][2] == "normal weight") {
+								mesh = new THREE.Mesh(geometry, matLite_blue);
+							} else {
+								mesh = new THREE.Mesh(geometry, matLite_red);
+							}
+							break;
+						case 3: // pulse
+							mesh = new THREE.Mesh(geometry, matLite_blue);
+							break;
+						case 4: // AIx
+							mesh = new THREE.Mesh(geometry, matLite_blue);
+							break;
+						default:
+							break;
+					}
+					mesh.position.set(1.5, 0, 4 + i * 0.5);
+					mesh.rotateX(-Math.PI / 2);
+					// mesh.rotateZ(Math.PI);
+					mesh.scale.set(0.003, 0.003, 0.003);
+					eval("group" + num_model + ".add(mesh);");
+				}
+
+				//3th
+				if (info_string[num_model][3] === 'dicrotic pulse') {
+					paramN[num_model] = 1;
+					paramM[num_model] = 0;
+					paramA[num_model] = 0;
+					paramB[num_model] = 0;
+				} else if (info_string[num_model][3] === 'pulsus paradoxus') {
+					paramN[num_model] = 1;
+					paramM[num_model] = 0;
+					paramA[num_model] = Number(code[num_model].data.split(';')[16]);
+					paramB[num_model] = Number(code[num_model].data.split(';')[17]);
+				} else {
+					paramN[num_model] = Number(code[num_model].data.split(';')[16]);
+					paramM[num_model] = Number(code[num_model].data.split(';')[17]);
+					paramA[num_model] = 0;
+					paramB[num_model] = 0;
+				}
+
+				// //4th
+				// let paramA = Number(code[num_model].data.split(';')[20]);
+				// let paramB = Number(code[num_model].data.split(';')[21]);
+
+				if (paramA[num_model] !== 0 && paramB[num_model] !== 0) {
+					let shape2 = font.generateShapes(Inspiration, 100 );
+					let geometry2 = new THREE.ShapeBufferGeometry(shape2);
+					let mesh2 = new THREE.Mesh(geometry2, matLite_red);
+					mesh2.position.set(-2.7, 0, -7.5);
+					mesh2.rotateX(-Math.PI / 2);
+					mesh2.scale.set(0.003, 0.003, 0.003);
+					eval("group" + num_model + ".add(mesh2);");
+
+					let shape3 = font.generateShapes(Expiration, 100 );
+					let geometry3 = new THREE.ShapeBufferGeometry(shape3);
+					let mesh3 = new THREE.Mesh(geometry3, matLite_red);
+					mesh3.position.set(0.4, 0, -7.5);
+					mesh3.rotateX(-Math.PI / 2);
+					mesh3.scale.set(0.003, 0.003, 0.003);
+					eval("group" + num_model + ".add(mesh3);");
+				}
+
+			});
+		}
+		// hand图片部分
+		// plane
+		function generateHand(num_model, bool_right) {
+			let texture;
+			if (bool_right) {
+				texture = new THREE.TextureLoader().load('rightHand_newer.png');
+			} else {
+				texture = new THREE.TextureLoader().load('leftHand_newer.png');
+			}
+			let geometry = new THREE.PlaneGeometry(500, 699);
+			let material = new THREE.MeshBasicMaterial({ map: texture });
+			material.transparent = true;
+			let ldp = new THREE.Mesh(geometry, material);
+			if (bool_right) {
+				ldp.position.set(-1.55, -1, 4);
+			} else {
+				ldp.position.set(-1.5, -1, 4);
+			}
+			ldp.scale.set(0.005, 0.005, 0.005);
+			ldp.rotateX(-Math.PI / 2);
+			eval("group" + num_model + ".add(ldp);");
+		}
+
+
+	
+		var worker = new Worker('jsQR_worker.js');
+		var workerReady = true;
+		var worker2 = new Worker('jsQR_worker.js');
+		var workerReady2 = true;
+		function angle(start, end) {
+			var diff_x = end.x - start.x,
+				diff_y = end.y - start.y;
+			return 360 * Math.atan(diff_y / diff_x) / (2 * Math.PI);
+		}
+		let current = 0;
+		let start_loop = false;
+		function scan2model() {
+			if (workerReady && arToolkitContext.arController !== null) {
+				let scanedImageData = arToolkitContext.arController.ctx.getImageData(0, 0, width, height);
+				worker.postMessage(scanedImageData, [scanedImageData.data.buffer]);
+				workerReady = false;
+			}
+			worker.onmessage = function (event) {
+				// console.log("here in the scan thing");
+				workerReady = true;
+				let code_scan;
+				if (event.data == "NothingDetected") {
+					code_scan = null;
+				}	else {
+					let str_temp = event.data.data;
+					if (str_temp.indexOf('?') != -1) {
+						str_temp = str_temp.split("?")[1];
+					}
+					code_scan = event.data;
+					code_scan.data = str_temp;
+				}
+				if (code_scan != null) {
+					if (code_scan.data.indexOf(";") != -1) {
+						if (start_loop) {
+							let is_exist = false;
+							for (let i = 0; i <= 2; i++) {
+								if (code_scan.data == code[i].data) {
+									is_exist = true;
+									break;
+								}
+							}
+							if (!is_exist) {
+								// replace the qrCode.
+								let num_marker = arToolkitContext.arController.getMarkerNum();
+								for (let j = 0; j < num_marker; j++) {
+									markerInfo = arToolkitContext.arController.getMarker(j);
+									if (markerInfo.id === 8191) {
+										return;
+									}
+								}
+								code[current] = code_scan;
+								scan_ok[current] = 1;
+								decode_ok[current] = 0;
+								create_complete[current] = 0;
+								eval("scene.remove(markerRoot[current]);");
+								eval("markerRoot[current].remove(group" + current + ");");
+								eval("group" + current + " = new THREE.Group;");
+								create_empty_geometry(current);
+								decodeFlag[current] = true;
+								let _angle = angle({ x: code[current].location.topLeftCorner.x, y: code[current].location.topLeftCorner.y },
+									{ x: code[current].location.topRightCorner.x, y: code[current].location.topRightCorner.y });
+								let str_tmp = 'source' + (current + 1).toString();
+								cropImage(arToolkitContext.arController.canvas, code[current].location.topLeftCorner.x, code[current].location.topLeftCorner.y,
+									code[current].location.topRightCorner.x, code[current].location.topRightCorner.y,
+									code[current].location.bottomLeftCorner.x, code[current].location.bottomLeftCorner.y,
+									code[current].location.bottomRightCorner.x, code[current].location.bottomRightCorner.y, false, _angle, str_tmp);
+
+								arToolkitContext.arController.detectMarker(bufferCanvas);
+								num_marker = arToolkitContext.arController.getMarkerNum();
+								for (let j = 0; j < num_marker; j++) {
+									markerInfo = arToolkitContext.arController.getMarker(j);
+									if (markerInfo.id != -1 && markerInfo.id != 7099 && markerInfo.id != 8191) {							
+										info_string[current] = decode(markerInfo.id);
+										if (info_string[current][3] === 'dicrotic pulse') {
+											pulseType = 1;
+										} else if (info_string[current][3] === 'pulsus paradoxus') {
+											pulseType = 2;
+										}
+									}
+								}
+								w = new Worker("create_model_6.js");
+								
+								w.onmessage = function (event) {
+									if (event.data.frame_info != null) {
+										total_frames[event.data.current] = event.data.total_frames / 4;
+										frame_info = event.data.frame_info;
+										frame_color_info = event.data.frame_color_info;
+										points = event.data.points;
+										create_pulse_model(event.data.current);
+										create_complete[event.data.current] = 1;
+										pulseType = 0;
+										w.terminate();
+									}
+								}
+								w.postMessage({
+									code: code[current].data,
+									num: current,
+									pulseType: pulseType,
+									zFactor: zFactor,
+									resolution: resolution
+								});
+								if (current == 2) {
+									current = 0;
+								} else {
+									current++;
+								}
+							}
+						} else {
+							// not in a loop.
+							let is_exist = false;
+							for (let i = 0; i < current; i++) {
+								if (code_scan.data == code[i].data) {
+									is_exist = true;
+									break;
+								}
+							}
+							if (!is_exist) {
+								let num_marker = arToolkitContext.arController.getMarkerNum();
+								for (let j = 0; j < num_marker; j++) {
+									markerInfo = arToolkitContext.arController.getMarker(j);
+									if (markerInfo.id === 8191) {
+										return;
+									}
+								}
+								code[current] = code_scan;
+								scan_ok[current] = 1;
+								let _angle = angle({ x: code[current].location.topLeftCorner.x, y: code[current].location.topLeftCorner.y },
+									{ x: code[current].location.topRightCorner.x, y: code[current].location.topRightCorner.y });
+								let str_tmp = 'source' + (current + 1).toString();
+								cropImage(arToolkitContext.arController.canvas, code[current].location.topLeftCorner.x, code[current].location.topLeftCorner.y,
+									code[current].location.topRightCorner.x, code[current].location.topRightCorner.y,
+									code[current].location.bottomLeftCorner.x, code[current].location.bottomLeftCorner.y,
+									code[current].location.bottomRightCorner.x, code[current].location.bottomRightCorner.y, false, _angle, str_tmp);
+
+								arToolkitContext.arController.detectMarker(bufferCanvas);
+								num_marker = arToolkitContext.arController.getMarkerNum();
+								for (let j = 0; j < num_marker; j++) {
+									markerInfo = arToolkitContext.arController.getMarker(j);
+									if (markerInfo.id != -1 && markerInfo.id != 7099 && markerInfo.id != 8191) {							
+										info_string[current] = decode(markerInfo.id);
+										if (info_string[current][3] === 'dicrotic pulse') {
+											pulseType = 1;
+										} else if (info_string[current][3] === 'pulsus paradoxus') {
+											pulseType = 2;
+										}
+									}
+								}
+								w = new Worker("create_model_6.js");
+
+								w.onmessage = function (event) {
+									if (event.data.frame_info != null) {
+										total_frames[event.data.current] = event.data.total_frames / 4;
+										frame_info = event.data.frame_info;
+										frame_color_info = event.data.frame_color_info;
+										points = event.data.points;
+										create_pulse_model(event.data.current);
+										create_complete[event.data.current] = 1;
+										pulseType = 0;
+										w.terminate();
+									}
+								}
+								w.postMessage({
+									code: code[current].data,
+									num: current,
+									pulseType: pulseType,
+									zFactor: zFactor,
+									resolution: resolution					
+								});
+								if (current == 2) {
+									start_loop = true;
+									current = 0;
+								} else {
+									current++;
+								}
+							}
+						}
+					}
+
+				}
+			}
+		}
+		// try to create model at the first time!
+		if (param != "") {
+			code[current] = code_scan;
+			code[current].data = param;
+			scan_ok[current] = 1;
+			w = new Worker("create_model_6.js");
+
+			w.onmessage = function (event) {
+				if (event.data.frame_info != null) {
+					total_frames[event.data.current] = event.data.total_frames / 4;
+					frame_info = event.data.frame_info;
+					frame_color_info = event.data.frame_color_info;
+					points = event.data.points;
+					create_pulse_model(event.data.current);
+					create_complete[event.data.current] = 1;
+					pulseType = 0;
+					w.terminate();
+				}
+			}
+			w.postMessage({
+				code: code[current].data,
+				num: current,
+				pulseType: pulseType,
+				zFactor: zFactor,
+				resolution: resolution
+			});
+			current++;
+		}
+		let decodeFlag = [true, true, true];
+		function decode2marker() {
+			if (workerReady2 && arToolkitContext.arController !== null) {
+				let scanedImageData = arToolkitContext.arController.ctx.getImageData(0, 0, width, height);
+				worker2.postMessage(scanedImageData, [scanedImageData.data.buffer]);
+				workerReady2 = false;
+			}
+			worker2.onmessage = function (event) {
+				workerReady2 = true;
+				if (current > 0 && !create_complete[current - 1]) {
+					return;
+				}
+				let code_tmp;
+				if (event.data == "NothingDetected") {
+					code_tmp = null;
+				}
+				else {
+					let str_temp = event.data.data;
+					if (str_temp.indexOf('?') != -1) {
+						str_temp = str_temp.split("?")[1];
+					}
+					code_tmp = event.data;
+					code_tmp.data = str_temp;
+				}
+				if (code_tmp != null) {
+					for (let i = 0; i < 3; i++) {
+						if (decodeFlag[i] && code[i] !== '' && code_tmp.data == code[i].data) {
+							let str_tmp = 'source' + (i + 1).toString();
+							code[i] = code_tmp;
+							let _angle = angle({ x: code[i].location.topLeftCorner.x, y: code[i].location.topLeftCorner.y },
+								{ x: code[i].location.topRightCorner.x, y: code[i].location.topRightCorner.y });
+							cropImage(arToolkitContext.arController.canvas, code[i].location.topLeftCorner.x, code[i].location.topLeftCorner.y,
+								code[i].location.topRightCorner.x, code[i].location.topRightCorner.y,
+								code[i].location.bottomLeftCorner.x, code[i].location.bottomLeftCorner.y,
+								code[i].location.bottomRightCorner.x, code[i].location.bottomRightCorner.y, false, _angle, str_tmp);
+							let img = document.getElementById(str_tmp);
+							arToolkitContext.arController.detectMarker(bufferCanvas);
+							num_marker = arToolkitContext.arController.getMarkerNum();
+							for (let j = 0; j < num_marker; j++) {
+								markerInfo = arToolkitContext.arController.getMarker(j);
+								if (markerInfo.id != -1 && markerInfo.id != 7099 && markerInfo.id != 8191) {
+									// let resString = decode(markerInfo.id);
+									decode_ok[i] = 1;
+									scene.add(markerRoot[i]);
+									artoolkitMarker[i] = new THREEx.ArMarkerControls(arToolkitContext, markerRoot[i], {
+										type: 'barcode',
+										barcodeValue: markerInfo.id,
+										smooth: true,
+										smoothCount: 5,
+										smoothTolerance: 0.01,
+										smoothThreshold: 2
+									});
+									barcode_group[i] = markerInfo.id;
+									eval("scene.remove(group" + 0 + ");");
+									eval("markerRoot[i].add(group" + i + ");");
+									if (i == 0 && param != "" && !start_loop) {
+										eval("group" + i + ".position.set(0, 0, 0)");
+										eval("group" + i + ".rotation.x -= Math.PI / 8");
+										eval("group" + i + ".rotation.y -= Math.PI / 6");
+									}
+									info_string[i] = decode(markerInfo.id);
+
+									create_other_info(i, info_string);
+									decodeFlag[i] = false;
+									break;
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		// try to decode other info at the first time!
+		if (param != "") {
+			decode_ok[0] = 0;
+			group0.position.set(0, 0, -20);
+			group0.rotation.x += Math.PI / 8;
+			group0.rotation.y += Math.PI / 6;
+			eval("scene.add(group" + 0 + ");");
+			decodeFlag[i] = true;
+		}
+
+
+		const decode = (res) => {
+			let binaryRes = res.toString(2); // length = 13; 10进制数字转换成2进制
+			// console.log(binaryRes, binaryRes.length);
+			while (binaryRes.length < 13) {
+				binaryRes = '0' + binaryRes;
+			}
+			// console.log(binaryRes, binaryRes.length);
+			const ans = [];
+			const gender = ['male', 'female']; // classification = 2, length = 1, index = 0;
+			const age = ['underage', 'youth', 'middle-aged', 'elderly']; // classification = 4, length = 2, index = 1-2; underage(0-17 years old), youth(18-65), middle-aged(66-79), elderly(80+)
+			const body_mass_index = ['underweight', 'normal weight', 'overweight', 'obese']; // classification = 4, length = 2, index = 3-4; BMI: underweight (under 18.5 kg/m2), normal weight (18.5 to 24.9), overweight (25 to 29.9), and obese (30 or more)
+			const pulse = ['normal pulse', 'pulsus alternans', 'pulsus bisferiens', 'dicrotic pulse', // classification = 8, length = 3, index = 5-7; normal pulse, alternating pulse (pulsus alternans), pulsus bisferiens, bigeminal pulse (dicrotic pulse / 交替脉冲), 
+										'hyperkinetic pulse', 'pulsus paradoxus', 'pulsus parvus et tardus', 'corrigan pulse']; // large bounding pulse (hyperkinetic pulse), paradoxic pulse (pulsus paradoxus / 呼吸), pulsus parvus et tardus, or water-hammer pulse (corrigan pulse / collapsing pulse)
+			const Custom = []; // classification = 32, length = 5, index = 8-12; You can customize the content to your own needs     
+			
+			ans.push(gender[binaryRes.slice(0, 1)]);
+			ans.push(age[parseInt(binaryRes.slice(1, 3), 2)]); // 2进制数字转换成10进制
+			ans.push(body_mass_index[parseInt(binaryRes.slice(3, 5), 2)]); 
+			ans.push(pulse[parseInt(binaryRes.slice(5, 8), 2)]); 
+			return ans;
+			
+		};
+
+
+
+		var slow_dowm_scan = 0;
+		var setSize = 0;
+		var d, newd, accnewd, accd, di;
+		var slow_dowm_show = 0;
+		var enable_slow_show = 0;
+		var count_n = [0, 0, 0];
+		var tick = function () {
+		var param_n = [0, 0, 0];
+			
+			for (let i = 0; i < 3; i++) {
+				if (create_complete[i]) {
+					param_n[i] = Number(code[i].data.split(';')[15]); //3th
+					// param_n[i] = Number(code[i].data.split(';')[18]); //4th
+				}
+			}
+			if (!setSize) {
+				video = document.getElementsByTagName('video')[0];
+				if (video !== undefined) {
+					if (video.videoWidth == 0) return;
+					width = video.videoWidth;
+					height = video.videoHeight;
+					bufferCanvas.width = width;
+					bufferCanvas.height = height;
+					setSize = 1;
+				}
+			}
+			if (!slow_dowm_show) {
+				if (create_complete[0]) {
+					if (!enable_slow_show) {
+						if (num[0] == 1) {
+							d = new Date();
+						} else if (num[0] == 2) {
+							newd = new Date();
+							accnewd = Number(String(newd.getSeconds()) + "." + String(newd.getMilliseconds()));
+							accd = Number(String(d.getSeconds()) + "." + String(d.getMilliseconds()));
+							di = accnewd - accd;
+							if (d.getMinutes() != newd.getMinutes()) {
+								di = (60 * (newd.getMinutes() - d.getMinutes())) + di
+							}
+							console.log('dT', 0.04 - di)
+							if (Math.abs(Math.round(di * 1000) / 1000) < 0.02) {
+								enable_slow_show = 1;
+							}
+						}
+					}
+					
+					switchFrame(num[0], 0);
+					// if (num[0] === 1) {
+					// 	tStart = new Date()
+					// 	tStart_ms = Number(String(tStart.getSeconds()) + "." + String(tStart.getMilliseconds()));
+					// 	console.log('tStart_ms', tStart_ms)
+					// }
+					// if (num[0] === 2) {
+					// 	tEnd = new Date()
+					// 	tEnd_ms = Number(String(tEnd.getSeconds()) + "." + String(tEnd.getMilliseconds()));
+					// 	console.log('tEnd_ms', tEnd_ms)
+					// 	tDelta = tEnd_ms - tStart_ms
+					// 	console.log('tDelta', tDelta)
+					// }
+					num[0]++;
+					count_n[0]++;
+				}
+				if (create_complete[1]) {
+					switchFrame(num[1], 1);
+					num[1]++;
+
+				}
+				if (create_complete[2]) {
+					switchFrame(num[2], 2);
+					num[2]++;
+
+				}
+			}
+			if (enable_slow_show) {
+				slow_dowm_show++;
+				if (slow_dowm_show == 3) {
+					slow_dowm_show = 0;
+				}
+			}
+		};
+		onRenderFcts.push(function (delta) {
+			if (!scan_or_show) {
+				if (!slow_dowm_scan) {
+					scan2model();
+					decode2marker();
+				}
+			}
+			slow_dowm_scan++;
+			if (slow_dowm_scan == 10) {
+				slow_dowm_scan = 0;
+			}
+		})
+		onRenderFcts.push(function (delta) {
+			tick();
+		})
+		onRenderFcts.push(function () {
+			renderer.render(scene, camera);
+			controls.update();
+		});
+		var lastTimeMsec = null
+		requestAnimationFrame(function animate(nowMsec) {
+			requestAnimationFrame(animate);
+			lastTimeMsec = lastTimeMsec || nowMsec - 1000 / 60
+			var deltaMsec = Math.min(200, nowMsec - lastTimeMsec)
+			lastTimeMsec = nowMsec
+			onRenderFcts.forEach(
+				function (onRenderFct) {
+					onRenderFct(deltaMsec / 1000, nowMsec / 1000)
+				})
+		})
+
+
+
+
+
+		// 创建 fps 面板展示元素
+		var fpsPanel = document.createElement("div");
+      fpsPanel.setAttribute("id", "fps");
+      fpsPanel.style.position = "fixed";
+      fpsPanel.style.right = "3px";
+      fpsPanel.style.top = "3px";
+			fpsPanel.style.fontSize = "40px";
+      fpsPanel.style.color = "red";
+      fpsPanel.style.zIndex = 10000;
+      // 将面板插入到 body
+      document.body.append(fpsPanel);
+      // fps 监测逻辑实现
+      var showFPS = (function () {
+        var requestAnimationFrame =
+          window.requestAnimationFrame ||
+          window.webkitRequestAnimationFrame ||
+          window.mozRequestAnimationFrame ||
+          window.oRequestAnimationFrame ||
+          window.msRequestAnimationFrame ||
+          function (callback) {
+            window.setTimeout(callback, 1000 / 60);
+          };
+        var e, pe, pid, fps, last, offset, step, appendFps;
+
+        fps = 0;
+        last = Date.now();
+        step = function () {
+          offset = Date.now() - last;
+          fps += 1;
+          if (offset >= 1000) {
+            last += offset;
+            appendFps(fps);
+            fps = 0;
+          }
+          requestAnimationFrame(step);
+        };
+        appendFps = function (fps) {
+          // 打印 fps
+          // console.log(fps + "FPS");
+          // 修改面板显示的值
+          fpsPanel.innerHTML = fps + "FPS";
+        };
+        step();
+      })();
+	</script>
+</body>
+
+</html>
