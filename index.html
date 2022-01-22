@@ -1147,7 +1147,7 @@
 							if (d.getMinutes() != newd.getMinutes()) {
 								di = (60 * (newd.getMinutes() - d.getMinutes())) + di
 							}
-							console.log('dT', 0.04 - di)
+							// console.log('dT', 0.04 - di)
 							// console.log('dT', di)
 							if (Math.abs(Math.round(di * 1000) / 1000) < 0.02) {
 								enable_slow_show = 1;
@@ -1156,18 +1156,18 @@
 					}
 					
 					switchFrame(num[0], 0);
-					// if (num[0] === 1) {
-					// 	tStart = new Date()
-					// 	tStart_ms = Number(String(tStart.getSeconds()) + "." + String(tStart.getMilliseconds()));
-					// 	console.log('tStart_ms', tStart_ms)
-					// }
-					// if (num[0] === 2) {
-					// 	tEnd = new Date()
-					// 	tEnd_ms = Number(String(tEnd.getSeconds()) + "." + String(tEnd.getMilliseconds()));
-					// 	console.log('tEnd_ms', tEnd_ms)
-					// 	tDelta = tEnd_ms - tStart_ms
-					// 	console.log('tDelta', tDelta)
-					// }
+					if (num[0] === 1) {
+						tStart = new Date()
+						tStart_ms = Number(String(tStart.getSeconds()) + "." + String(tStart.getMilliseconds()));
+						// console.log('tStart_ms', tStart_ms)
+					}
+					if (num[0] === 2) {
+						tEnd = new Date()
+						tEnd_ms = Number(String(tEnd.getSeconds()) + "." + String(tEnd.getMilliseconds()));
+						// console.log('tEnd_ms', tEnd_ms)
+						tDelta = tEnd_ms - tStart_ms
+						console.log('DeltaT', tDelta)
+					}
 					num[0]++;
 					count_n[0]++;
 				}
