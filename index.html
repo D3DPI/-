@@ -667,15 +667,15 @@
 // 				const BMI = "BMI:  " + info_string[num_model][2];
 // 				const PLS = "PLS:  " + info_string[num_model][3];
 // 				const AIx = "AIx:  " + code[num_model].data.split(';')[14]; //3th
-				const GNDR = "GNDR:  " + (info_string[num_model][0] === 0 ? "male" : "female");
+				const GNDR = "GNDR:  " + (info_string[num_model][0] === 0 ? "m" : "f");
 				if (info_string[num_model][1] === 0) {
-					var AGE = "年龄:  " + "未成年";
+					var AGE = "a:  " + "未成年";
 				} else if (info_string[num_model][1] === 1) {
-					var AGE = "年龄:  " + "青年";
+					var AGE = "a:  " + "青年";
 				} else if (info_string[num_model][1] === 2) {
-					var AGE = "年龄:  " + "中年";
+					var AGE = "a:  " + "中年";
 				} else {
-					var AGE = "年龄:  " + "老年";
+					var AGE = "a:  " + "老年";
 				}
 
 				if (info_string[num_model][2] === 0) {
