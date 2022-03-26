@@ -667,36 +667,43 @@
 // 				const BMI = "BMI:  " + info_string[num_model][2];
 // 				const PLS = "PLS:  " + info_string[num_model][3];
 // 				const AIx = "AIx:  " + code[num_model].data.split(';')[14]; //3th
-				const GNDR = "GNDR:  " + (info_string[num_model][0] === 0 ? "m" : "f");
-				if (info_string[num_model][1] === 0) {
-					var AGE = "a:  " + "未成年";
-				} else if (info_string[num_model][1] === 1) {
-					var AGE = "a:  " + "青年";
-				} else if (info_string[num_model][1] === 2) {
-					var AGE = "a:  " + "中年";
-				} else {
-					var AGE = "a:  " + "老年";
-				}
+				
+				const GNDR = " ";
+				const AGE = " ";
+				const BMI = " ";
+				const PLS = " ";
+				const AIx = " ";		
+				
+// 				const GNDR = "GNDR:  " + (info_string[num_model][0] === 0 ? "m" : "f");
+// 				if (info_string[num_model][1] === 0) {
+// 					var AGE = "a:  " + "未成年";
+// 				} else if (info_string[num_model][1] === 1) {
+// 					var AGE = "a:  " + "青年";
+// 				} else if (info_string[num_model][1] === 2) {
+// 					var AGE = "a:  " + "中年";
+// 				} else {
+// 					var AGE = "a:  " + "老年";
+// 				}
 
-				if (info_string[num_model][2] === 0) {
-					var BMI = "BMI:  " + "体型过瘦";
-				} else if (info_string[num_model][2] === 1) {
-					var BMI = "BMI:  " + "正常";
-				} else if (info_string[num_model][2] === 2) {
-					var BMI = "BMI:  " + "超重";
-				} else {
-					var BMI = "BMI:  " + "肥胖";
-				}				
+// 				if (info_string[num_model][2] === 0) {
+// 					var BMI = "BMI:  " + "体型过瘦";
+// 				} else if (info_string[num_model][2] === 1) {
+// 					var BMI = "BMI:  " + "正常";
+// 				} else if (info_string[num_model][2] === 2) {
+// 					var BMI = "BMI:  " + "超重";
+// 				} else {
+// 					var BMI = "BMI:  " + "肥胖";
+// 				}				
 
-				if (info_string[num_model][3] === 'dicrotic pulse') {
-					var PLS = "脉象类型:  " + "二联脉";
-				} else if (info_string[num_model][3] === 'pulsus paradoxus') {
-					var PLS = "脉象类型:  " + "奇脉";
-				} else {
-					var PLS = "脉象类型:  " + "正常脉";
-				}
+// 				if (info_string[num_model][3] === 'dicrotic pulse') {
+// 					var PLS = "脉象类型:  " + "二联脉";
+// 				} else if (info_string[num_model][3] === 'pulsus paradoxus') {
+// 					var PLS = "脉象类型:  " + "奇脉";
+// 				} else {
+// 					var PLS = "脉象类型:  " + "正常脉";
+// 				}
 
-				const AIx = "AIx:  " + code[num_model].data.split(';')[14]; //3th				
+// 				const AIx = "AIx:  " + code[num_model].data.split(';')[14]; //3th				
 				// let AIx = "AIx:  " + code[num_model].data.split(';')[17]; //4th
 				const Inspiration = "Inspiration";
 				const Expiration = "Expiration";
