@@ -7,8 +7,15 @@ function initAR() {
         .then(stream => {
             video.srcObject = stream;
             video.play();
+            video.style.display = 'block';
+            setupThreeJS();
+        })
+        .catch(err => {
+            console.error("Error accessing camera: ", err);
         });
+}
 
+function setupThreeJS() {
     scene = new THREE.Scene();
     camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('canvas'), alpha: true });
