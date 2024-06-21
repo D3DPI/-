@@ -10,12 +10,12 @@
     <script src="arModel.js"></script>
     <style>
         body { margin: 0; overflow: hidden; }
-        canvas, video { position: absolute; top: 0; left: 0; }
+        canvas { position: absolute; top: 0; left: 0; }
     </style>
 </head>
 <body>
-    <video id="video" autoplay playsinline style="width: 100%; height: auto; display: none;"></video>
-    <canvas id="canvas" style="width: 100%; height: auto;"></canvas>
+    <video id="video" autoplay playsinline style="display: none;"></video>
+    <canvas id="canvas"></canvas>
     <script>
         window.addEventListener('load', () => {
             initAR(); // 初始化 AR
