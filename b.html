@@ -20,9 +20,9 @@
     <script>
         window.addEventListener('load', () => {
             const urlParams = new URLSearchParams(window.location.search);
-            const modelNumber = urlParams.get('1') || urlParams.get('1');
+            const modelNumber = urlParams.get('1');
 
-            if (modelNumber) {
+            if (modelNumber !== null) {
                 console.log(`Loading model number: ${modelNumber}`);
                 document.querySelector('#model').setAttribute('gltf-model', `url(models/model${modelNumber}.gltf)`);
             } else {
