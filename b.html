@@ -14,16 +14,19 @@
     </style>
 </head>
 <body>
-    <video id="video" autoplay playsinline style="width: 100%; height: auto;"></video>
-    <canvas id="canvas"></canvas>
+    <video id="video" autoplay playsinline style="width: 100%; height: auto; display: none;"></video>
+    <canvas id="canvas" style="width: 100%; height: auto;"></canvas>
     <script>
         // Extract model number from URL
         const urlParams = new URLSearchParams(window.location.search);
         const modelNumber = urlParams.get('1');
         
-        // Load the corresponding model
-        console.log(`Loading model number: ${modelNumber}`);
-        loadModel(`models/model${modelNumber}.gltf`);
+        if (modelNumber) {
+            console.log(`Loading model number: ${modelNumber}`);
+            loadModel(`models/model${modelNumber}.gltf`);
+        } else {
+            console.error('Model number not found in URL');
+        }
     </script>
 </body>
 </html>
