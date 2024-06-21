@@ -10,9 +10,9 @@
         body { margin: 0; overflow: hidden; }
     </style>
 </head>
-<body style="margin : 0px; overflow: hidden;">
-    <a-scene embedded arjs>
-        <a-marker preset="hiro">
+<body style="margin: 0; overflow: hidden;">
+    <a-scene embedded arjs='sourceType: webcam; detectionMode: mono_and_matrix; matrixCodeType: 3x3'>
+        <a-marker type="barcode" value="5">
             <a-entity id="model" position="0 0 0" scale="0.05 0.05 0.05" gltf-model="url(models/model1.gltf)"></a-entity>
         </a-marker>
         <a-entity camera></a-entity>
