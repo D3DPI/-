@@ -7,7 +7,6 @@ function initAR() {
         .then(stream => {
             video.srcObject = stream;
             video.play();
-            video.style.display = 'block';
             setupThreeJS();
         })
         .catch(err => {
@@ -30,6 +29,8 @@ function setupThreeJS() {
     scene.add(directionalLight);
 
     camera.position.set(0, 0, 10);
+
+    console.log("Three.js setup complete");
     animate();
 }
 
@@ -39,6 +40,9 @@ function loadModel(url) {
         model = gltf.scene;
         model.position.set(0, 0, -10);
         scene.add(model);
+        console.log("Model loaded successfully");
+    }, undefined, function (error) {
+        console.error("Error loading model: ", error);
     });
 }
 
@@ -48,6 +52,7 @@ function animate() {
         model.rotation.y += 0.01;
     }
     renderer.render(scene, camera);
+    console.log("Rendering frame");
 }
 
 initAR();
