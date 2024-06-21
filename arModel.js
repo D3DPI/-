@@ -3,6 +3,11 @@ let model;
 
 function initAR() {
     const video = document.getElementById('video');
+    if (!video) {
+        console.error("Video element not found");
+        return;
+    }
+    
     navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
         .then(stream => {
             video.srcObject = stream;
