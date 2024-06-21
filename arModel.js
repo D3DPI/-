@@ -7,7 +7,7 @@ function initAR() {
         console.error("Video element not found");
         return;
     }
-    
+
     navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
         .then(stream => {
             video.srcObject = stream;
@@ -40,6 +40,11 @@ function setupThreeJS() {
 }
 
 function loadModel(url) {
+    if (!scene) {
+        console.error("Scene is not initialized");
+        return;
+    }
+
     const loader = new THREE.GLTFLoader();
     loader.load(url, function (gltf) {
         model = gltf.scene;
