@@ -5,17 +5,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AR Model Viewer</title>
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
-    <script src="https://cdn.rawgit.com/jeromeetienne/AR.js/1.7.5/aframe/build/aframe-ar.js"></script>
+    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
     <style>
         body { margin: 0; overflow: hidden; }
     </style>
 </head>
 <body style="margin: 0; overflow: hidden;">
-    <a-scene embedded arjs='sourceType: webcam; detectionMode: mono_and_matrix; matrixCodeType: 3x3'>
-        <a-marker type="barcode" value="5">
-            <a-entity id="model" position="0 0 0" scale="0.05 0.05 0.05" gltf-model="url(models/model1.gltf)"></a-entity>
+    <a-scene embedded arjs="sourceType: webcam; detectionMode: mono; matrixCodeType: 4x4;">
+        <a-marker type="pattern" url="pattern-marker.patt">
+            <a-entity id="model" position="0 0 0" scale="0.05 0.05 0.05" gltf-model=""></a-entity>
         </a-marker>
         <a-entity camera></a-entity>
     </a-scene>
+    <script>
+        window.addEventListener('load', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const modelNumber = urlParams.get('1') || urlParams.get('1');
+
+            if (modelNumber) {
+                console.log(`Loading model number: ${modelNumber}`);
+                document.querySelector('#model').setAttribute('gltf-model', `url(models/model${modelNumber}.gltf)`);
+            } else {
+                console.error('Model number not found in URL');
+            }
+        });
+    </script>
 </body>
 </html>
