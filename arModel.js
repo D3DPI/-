@@ -1,5 +1,5 @@
 let camera, scene, renderer;
-let model;
+let model, videoTexture;
 
 function initAR() {
     const video = document.getElementById('video');
@@ -12,18 +12,30 @@ function initAR() {
         .then(stream => {
             video.srcObject = stream;
             video.play();
-            setupThreeJS();
+            setupThreeJS(video);
         })
         .catch(err => {
             console.error("Error accessing camera: ", err);
         });
 }
 
-function setupThreeJS() {
+function setupThreeJS(video) {
     scene = new THREE.Scene();
     camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('canvas'), alpha: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
+
+    videoTexture = new THREE.VideoTexture(video);
+    videoTexture.minFilter = THREE.LinearFilter;
+    videoTexture.magFilter = THREE.LinearFilter;
+    videoTexture.format = THREE.RGBFormat;
+
+    const videoMaterial = new THREE.MeshBasicMaterial({ map: videoTexture });
+    const videoGeometry = new THREE.PlaneGeometry(2, 2);
+    const videoMesh = new THREE.Mesh(videoGeometry, videoMaterial);
+
+    videoMesh.position.z = -1;
+    scene.add(videoMesh);
 
     const light = new THREE.HemisphereLight(0xffffff, 0x444444);
     light.position.set(0, 20, 0);
