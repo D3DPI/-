@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AR Model Viewer</title>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.126.1/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.126.1/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.126.1/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="arModel.js"></script>
+    <style>
+        body { margin: 0; overflow: hidden; }
+        canvas, video { position: absolute; top: 0; left: 0; }
+    </style>
+</head>
+<body>
+    <video id="video" autoplay playsinline style="width: 100%; height: auto; display: none;"></video>
+    <canvas id="canvas" style="width: 100%; height: auto;"></canvas>
+    <script>
+        // Extract model number from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const modelNumber = urlParams.get('1');
+        
+        if (modelNumber) {
+            console.log(`Loading model number: ${modelNumber}`);
+            loadModel(`models/model${modelNumber}.gltf`);
+        } else {
+            console.error('Model number not found in URL');
+        }
+    </script>
+</body>
+</html>
