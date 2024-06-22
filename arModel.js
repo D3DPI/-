@@ -82,7 +82,7 @@ function setupThreeJS(video) {
     });
 
     const arToolkitContext = new THREEx.ArToolkitContext({
-        cameraParametersUrl: 'data/camera_para.dat',
+        cameraParametersUrl: 'camera_para.dat',
         detectionMode: 'mono'
     });
 
@@ -96,10 +96,10 @@ function setupThreeJS(video) {
     });
 
     function onResize() {
-        arToolkitSource.onResize();
-        arToolkitSource.copySizeTo(renderer.domElement);
+        arToolkitSource.onResizeElement();
+        arToolkitSource.copyElementSizeTo(renderer.domElement);
         if (arToolkitContext.arController !== null) {
-            arToolkitSource.copySizeTo(arToolkitContext.arController.canvas);
+            arToolkitSource.copyElementSizeTo(arToolkitContext.arController.canvas);
         }
     }
 
