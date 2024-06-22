@@ -1,6 +1,6 @@
 let camera, scene, renderer;
 let model, videoTexture;
-let markerFound = false;
+let markerRoot;
 
 function initAR() {
     const video = document.getElementById('video');
@@ -61,36 +61,68 @@ function setupThreeJS(video) {
         console.error('Model number not found in URL');
     }
     
-    animate();
+    markerRoot = new THREE.Group();
+    scene.add(markerRoot);
+
+    const arToolkitSource = new THREEx.ArToolkitSource({
+        sourceType: 'webcam',
+    });
+
+    arToolkitSource.init(() => {
+        arToolkitSource.domElement.addEventListener('canplay', () => {
+            onResize();
+        });
+        window.addEventListener('resize', () => {
+            onResize();
+        });
+    });
+
+    const arToolkitContext = new THREEx.ArToolkitContext({
+        cameraParametersUrl: 'data/camera_para.dat',
+        detectionMode: 'mono'
+    });
+
+    arToolkitContext.init(() => {
+        camera.projectionMatrix.copy(arToolkitContext.getProjectionMatrix());
+    });
+
+    const markerControls = new THREEx.ArMarkerControls(arToolkitContext, markerRoot, {
+        type: 'pattern',
+        patternUrl: 'pattern-marker.patt'
+    });
+
+    function onResize() {
+        arToolkitSource.onResize();
+        arToolkitSource.copySizeTo(renderer.domElement);
+        if (arToolkitContext.arController !== null) {
+            arToolkitSource.copySizeTo(arToolkitContext.arController.canvas);
+        }
+    }
+
+    animate(arToolkitContext, arToolkitSource);
 }
 
 function loadModel(url) {
-    if (!scene) {
-        console.error("Scene is not initialized");
-        return;
-    }
-
     const loader = new THREE.GLTFLoader();
     loader.load(url, function (gltf) {
         model = gltf.scene;
-        model.position.set(0, 0, 0);
         model.scale.set(10, 10, 10); // 调整模型的大小
-        scene.add(model);
+        markerRoot.add(model);
         console.log("Model loaded successfully");
     }, undefined, function (error) {
         console.error("Error loading model: ", error);
     });
 }
 
-function animate() {
-    requestAnimationFrame(animate);
+function animate(arToolkitContext, arToolkitSource) {
+    requestAnimationFrame(() => animate(arToolkitContext, arToolkitSource));
+
+    if (arToolkitSource.ready) {
+        arToolkitContext.update(arToolkitSource.domElement);
+    }
 
     if (model) {
         model.rotation.y += 0.01;
-    }
-    
-    // 检测锚点并在屏幕上显示其位置
-    if (model) {
         const markerPosition = model.position;
         document.getElementById('markerPosition').innerText = 
             `Marker position: x=${markerPosition.x.toFixed(2)}, y=${markerPosition.y.toFixed(2)}, z=${markerPosition.z.toFixed(2)}`;
