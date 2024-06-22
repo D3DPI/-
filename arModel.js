@@ -32,9 +32,10 @@ function setupThreeJS(video) {
     videoTexture.format = THREE.RGBFormat;
 
     const videoMaterial = new THREE.MeshBasicMaterial({ map: videoTexture });
-    const videoGeometry = new THREE.PlaneGeometry(window.innerWidth, window.innerHeight);
+    const videoGeometry = new THREE.PlaneGeometry(16, 9);
     const videoMesh = new THREE.Mesh(videoGeometry, videoMaterial);
 
+    videoMesh.scale.set(window.innerWidth / 16, window.innerHeight / 9, 1);
     videoMesh.position.set(0, 0, -500);
     scene.add(videoMesh);
 
@@ -71,7 +72,7 @@ function loadModel(url) {
     const loader = new THREE.GLTFLoader();
     loader.load(url, function (gltf) {
         model = gltf.scene;
-        model.position.set(0, 0, -10);
+        model.position.set(0, 0, 0);
         model.scale.set(10, 10, 10); // 调整模型的大小
         scene.add(model);
         console.log("Model loaded successfully");
