@@ -1,5 +1,6 @@
 let camera, scene, renderer;
 let model, videoTexture;
+let markerFound = false;
 
 function initAR() {
     const video = document.getElementById('video');
@@ -83,9 +84,21 @@ function loadModel(url) {
 
 function animate() {
     requestAnimationFrame(animate);
+
     if (model) {
         model.rotation.y += 0.01;
     }
+    
+    // 检测锚点并打印其位置
+    if (markerFound) {
+        const markerPosition = model.position;
+        console.log(`Marker position: x=${markerPosition.x}, y=${markerPosition.y}, z=${markerPosition.z}`);
+    }
+
     renderer.render(scene, camera);
     console.log("Rendering frame");
 }
+
+window.addEventListener('load', () => {
+    initAR();
+});
