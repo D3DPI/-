@@ -12,8 +12,11 @@ function initAR() {
     navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
         .then(stream => {
             video.srcObject = stream;
-            video.play();
-            setupThreeJS(video);
+            video.play().then(() => {
+                setupThreeJS(video);
+            }).catch(err => {
+                console.error("Error playing video: ", err);
+            });
         })
         .catch(err => {
             console.error("Error accessing camera: ", err);
@@ -33,11 +36,10 @@ function setupThreeJS(video) {
     videoTexture.format = THREE.RGBFormat;
 
     const videoMaterial = new THREE.MeshBasicMaterial({ map: videoTexture });
-    const videoGeometry = new THREE.PlaneGeometry(16, 9);
+    const videoGeometry = new THREE.PlaneGeometry(window.innerWidth, window.innerHeight);
     const videoMesh = new THREE.Mesh(videoGeometry, videoMaterial);
 
-    videoMesh.scale.set(window.innerWidth / 16, window.innerHeight / 9, 1);
-    videoMesh.position.set(0, 0, -500);
+    videoMesh.position.set(0, 0, -1);
     scene.add(videoMesh);
 
     const light = new THREE.HemisphereLight(0xffffff, 0x444444);
@@ -106,7 +108,7 @@ function loadModel(url) {
     const loader = new THREE.GLTFLoader();
     loader.load(url, function (gltf) {
         model = gltf.scene;
-        model.scale.set(10, 10, 10); // 调整模型的大小
+        model.scale.set(0.1, 0.1, 0.1); // 调整模型的大小
         markerRoot.add(model);
         console.log("Model loaded successfully");
     }, undefined, function (error) {
