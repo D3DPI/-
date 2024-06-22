@@ -12,10 +12,12 @@ function initAR() {
     navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
         .then(stream => {
             video.srcObject = stream;
-            video.play().then(() => {
-                setupThreeJS(video);
-            }).catch(err => {
-                console.error("Error playing video: ", err);
+            video.addEventListener('loadedmetadata', () => {
+                video.play().then(() => {
+                    setupThreeJS(video);
+                }).catch(err => {
+                    console.error("Error playing video: ", err);
+                });
             });
         })
         .catch(err => {
@@ -108,7 +110,7 @@ function loadModel(url) {
     const loader = new THREE.GLTFLoader();
     loader.load(url, function (gltf) {
         model = gltf.scene;
-        model.scale.set(0.1, 0.1, 0.1); // 调整模型的大小
+        model.scale.set(0.1, 0.1, 0.1); // Adjust the model size
         markerRoot.add(model);
         console.log("Model loaded successfully");
     }, undefined, function (error) {
