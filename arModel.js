@@ -54,7 +54,7 @@ function setupThreeJS(video) {
     const modelNumber = urlParams.get('1');
     if (modelNumber) {
         console.log(`Loading model number: ${modelNumber}`);
-        loadModel(`models/model${modelNumber}.gltf`);
+        loadModel(`model${modelNumber}.gltf`);
     } else {
         console.error('Model number not found in URL');
     }
