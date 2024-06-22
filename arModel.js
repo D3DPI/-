@@ -89,10 +89,11 @@ function animate() {
         model.rotation.y += 0.01;
     }
     
-    // 检测锚点并打印其位置
-    if (markerFound) {
+    // 检测锚点并在屏幕上显示其位置
+    if (model) {
         const markerPosition = model.position;
-        console.log(`Marker position: x=${markerPosition.x}, y=${markerPosition.y}, z=${markerPosition.z}`);
+        document.getElementById('markerPosition').innerText = 
+            `Marker position: x=${markerPosition.x.toFixed(2)}, y=${markerPosition.y.toFixed(2)}, z=${markerPosition.z.toFixed(2)}`;
     }
 
     renderer.render(scene, camera);
