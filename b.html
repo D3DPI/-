@@ -23,7 +23,7 @@
             const urlParams = new URLSearchParams(window.location.search);
             const modelNumber = urlParams.get('1');
 
-            if (modelNumber !== null && modelNumber !== "") {
+            if (modelNumber) {
                 console.log(`Loading model number: ${modelNumber}`);
                 document.querySelector('#model').setAttribute('gltf-model', `url(models/model${modelNumber}.gltf)`);
             } else {
