@@ -24,6 +24,7 @@ function setupThreeJS(video) {
     camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('canvas'), alpha: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(window.devicePixelRatio);
 
     videoTexture = new THREE.VideoTexture(video);
     videoTexture.minFilter = THREE.LinearFilter;
@@ -31,10 +32,10 @@ function setupThreeJS(video) {
     videoTexture.format = THREE.RGBFormat;
 
     const videoMaterial = new THREE.MeshBasicMaterial({ map: videoTexture });
-    const videoGeometry = new THREE.PlaneGeometry(16, 9);
+    const videoGeometry = new THREE.PlaneGeometry(window.innerWidth, window.innerHeight);
     const videoMesh = new THREE.Mesh(videoGeometry, videoMaterial);
 
-    videoMesh.position.z = -10;
+    videoMesh.position.set(0, 0, -500);
     scene.add(videoMesh);
 
     const light = new THREE.HemisphereLight(0xffffff, 0x444444);
@@ -49,7 +50,6 @@ function setupThreeJS(video) {
 
     console.log("Three.js setup complete");
 
-    // 确保Three.js初始化完成后再调用loadModel
     const urlParams = new URLSearchParams(window.location.search);
     const modelNumber = urlParams.get('1');
     if (modelNumber) {
@@ -71,8 +71,8 @@ function loadModel(url) {
     const loader = new THREE.GLTFLoader();
     loader.load(url, function (gltf) {
         model = gltf.scene;
-        model.position.set(0, 0, 0);
-        model.scale.set(0.1, 0.1, 0.1); // 调整模型的大小
+        model.position.set(0, 0, -10);
+        model.scale.set(10, 10, 10); // 调整模型的大小
         scene.add(model);
         console.log("Model loaded successfully");
     }, undefined, function (error) {
