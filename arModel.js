@@ -38,7 +38,7 @@ function setupThreeJS(video) {
     videoTexture.format = THREE.RGBFormat;
 
     const videoMaterial = new THREE.MeshBasicMaterial({ map: videoTexture });
-    const videoGeometry = new THREE.PlaneGeometry(window.innerWidth, window.innerHeight);
+    const videoGeometry = new THREE.PlaneGeometry(2, 2);
     const videoMesh = new THREE.Mesh(videoGeometry, videoMaterial);
 
     videoMesh.position.set(0, 0, -1);
@@ -52,7 +52,7 @@ function setupThreeJS(video) {
     directionalLight.position.set(0, 20, 10);
     scene.add(directionalLight);
 
-    camera.position.set(0, 0, 20);
+    camera.position.set(0, 0, 10);
 
     console.log("Three.js setup complete");
 
